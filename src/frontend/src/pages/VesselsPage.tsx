@@ -5,13 +5,16 @@ import {
   ArrowUpDown,
   ChevronRight,
   Zap,
+  Upload,
 } from 'lucide-react';
 import { useOperations } from '../context/OperationsContext';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { CsvImportModal } from '../components/operations/CsvImportModal';
 
 export const VesselsPage: React.FC = () => {
   const navigate = useNavigate();
   const { vessels, searchQuery, setSearchQuery, isOptimizationApplied } = useOperations();
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
@@ -60,11 +63,21 @@ export const VesselsPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-text-muted">
-          <span>In Queue:</span>
-          <span className="px-2.5 py-1 rounded-xl bg-surface border border-border-subtle font-semibold text-text-main shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-            {vessels.filter(v => v.status === 'Arriving' || v.status === 'At Anchor').length} Vessels
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs text-text-muted">
+            <span>In Queue:</span>
+            <span className="px-2.5 py-1 rounded-xl bg-surface border border-border-subtle font-semibold text-text-main shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+              {vessels.filter(v => v.status === 'Arriving' || v.status === 'At Anchor').length} Vessels
+            </span>
+          </div>
+
+          <button
+            onClick={() => setIsCsvModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-all shadow-md shadow-teal-500/20 active:scale-95 cursor-pointer"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Import Operations CSV</span>
+          </button>
         </div>
       </div>
 
@@ -183,7 +196,24 @@ export const VesselsPage: React.FC = () => {
                   {/* ETA/ETD */}
                   <td className="py-4 px-4 text-sm">
                     <div className="text-text-main font-semibold">{v.eta}</div>
-                    <div className="text-xs text-text-caption mt-0.5">ETD: {v.etd}</div>
+                    <div className="text-xs text-text-caption mt-0.5 flex items-center gap-1.5 flex-wrap">
+                      <span>ETD: {v.etd}</span>
+                      {v.isEstimatedEtd || (v.etd && v.etd.includes('(Est.)')) ? (
+                        <span
+                          className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-sky-50 text-sky-800 border border-sky-200"
+                          title={v.etdRationale || "Calculated by system from operational turnaround parameters"}
+                        >
+                          Est.
+                        </span>
+                      ) : (
+                        <span
+                          className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          title="Confirmed operational departure schedule"
+                        >
+                          Actual
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Current Berth */}
@@ -273,6 +303,12 @@ export const VesselsPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* CSV Ingestion Modal */}
+      <CsvImportModal
+        isOpen={isCsvModalOpen}
+        onClose={() => setIsCsvModalOpen(false)}
+      />
     </div>
   );
 };

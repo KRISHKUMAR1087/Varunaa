@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Ship,
@@ -8,10 +8,11 @@ import {
   Layers,
   CheckCircle2,
   AlertCircle,
+  Sparkles,
 } from 'lucide-react';
 import { useOperations } from '../../context/OperationsContext';
 import { useAuth } from '../../context/AuthContext';
-import {} from '../../types/operations';
+import { EtdEstimator } from '../../services/etdEstimator';
 
 export const ShippingAddVesselPage: React.FC = () => {
   const navigate = useNavigate();
@@ -58,6 +59,23 @@ export const ShippingAddVesselPage: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  // Auto-estimate departure using operational variables if ETD is not provided
+  const autoEstimate = useMemo(() => {
+    if (!formData.eta.trim()) return null;
+    const targetBerth = berths.find(b => b.id === formData.requestedBerth);
+    return EtdEstimator.estimateDeparture({
+      eta: formData.eta.trim(),
+      containerVolume: Number(formData.containersTotal) || 1200,
+      assignedBerth: formData.requestedBerth || 'B02',
+      berthUtilization: targetBerth?.currentUtilization || 65,
+      queueCount: targetBerth?.queueCount || 1,
+      cranesCount: Number(formData.requestedCranes) || 3,
+      craneMovesPerHour: 30,
+      weatherSeverity: 'Calm',
+      historicalTurnaroundHours: Number(formData.berthDurationHours) || 22,
+    });
+  }, [formData.eta, formData.containersTotal, formData.requestedBerth, formData.requestedCranes, formData.berthDurationHours, berths]);
+
   const validate = () => {
     const errs: { [key: string]: string } = {};
     if (!formData.name.trim()) errs.name = 'Vessel name is required';
@@ -67,7 +85,7 @@ export const ShippingAddVesselPage: React.FC = () => {
       errs.imo = 'IMO must be a valid 7-digit number';
     }
     if (!formData.eta.trim()) errs.eta = 'Estimated Time of Arrival (ETA) is required';
-    if (!formData.etd.trim()) errs.etd = 'Estimated Time of Departure (ETD) is required';
+    // ETD is an optional operational input: estimated automatically by the system if omitted.
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -78,6 +96,11 @@ export const ShippingAddVesselPage: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
+
+    const hasUserEtd = Boolean(formData.etd && formData.etd.trim());
+    const finalEtd = hasUserEtd 
+      ? formData.etd.trim() 
+      : (autoEstimate?.estimatedEtd || '+2 Days, 18:00 UTC (Est.)');
 
     const newVessel = addVessel({
       name: formData.name.trim(),
@@ -90,14 +113,17 @@ export const ShippingAddVesselPage: React.FC = () => {
       origin: formData.origin || 'Singapore (SGSIN)',
       destination: formData.destination || 'Rotterdam (NLRTM)',
       eta: formData.eta,
-      etd: formData.etd,
+      etd: finalEtd,
+      estimatedEtd: autoEstimate?.estimatedEtd,
+      isEstimatedEtd: !hasUserEtd,
+      etdRationale: !hasUserEtd ? autoEstimate?.rationale : undefined,
       status: 'Arriving',
       priority: 'Standard',
       currentBerth: null,
       assignedBerth: formData.requestedBerth || 'B02',
-      predictedWaitHours: 3.2,
+      predictedWaitHours: autoEstimate?.waitingHours || 3.2,
       demurrageRisk: 'Low',
-      historicalTurnaroundHours: 22,
+      historicalTurnaroundHours: autoEstimate?.turnaroundHours || 22,
       recommendedAction: 'Registered by agent. Quayside berthing review in progress.',
       ownerId: user?.id || 'demo-agent',
       shippingCompany: formData.shippingCompany,
@@ -417,18 +443,45 @@ export const ShippingAddVesselPage: React.FC = () => {
             <div className="space-y-1">
               <label className="font-medium text-text-main flex items-center justify-between">
                 <span>ETD (Estimated Departure)</span>
-                <span className="text-[10px] text-rose-600 font-semibold bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">Required</span>
+                <span className="text-[10px] text-teal-800 font-semibold bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200">
+                  Optional • Auto-Calculated
+                </span>
               </label>
               <input
                 type="text"
-                placeholder="e.g. +2 Days, 18:00 UTC"
+                placeholder={autoEstimate ? `Auto: ${autoEstimate.estimatedEtd}` : "e.g. +2 Days, 18:00 UTC (or leave blank)"}
                 value={formData.etd}
                 onChange={e => setFormData({ ...formData, etd: e.target.value })}
                 className={`w-full px-3 py-2 rounded-xl bg-surface-subtle border text-text-main text-xs focus:outline-hidden focus:border-sky-500 ${
                   errors.etd ? 'border-rose-400 bg-rose-50/30' : 'border-border-subtle'
                 }`}
               />
-              {errors.etd && <p className="text-[10px] text-rose-600">{errors.etd}</p>}
+              {autoEstimate && (
+                <div className="mt-1.5 p-2.5 rounded-xl bg-teal-50/60 border border-teal-200/80 text-[11px] text-teal-950 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-teal-900 flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5 text-brand-teal" />
+                      <span>System Est. ETD: {autoEstimate.estimatedEtd}</span>
+                    </span>
+                    {!formData.etd ? (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, etd: autoEstimate.estimatedEtd })}
+                        className="text-[10px] text-teal-800 hover:text-teal-950 font-bold underline cursor-pointer"
+                      >
+                        Apply to Input
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-teal-800 bg-teal-100/60 px-1.5 py-0.2 rounded font-medium">
+                        Custom override active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-text-muted leading-tight">
+                    {autoEstimate.rationale}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -614,4 +667,3 @@ export const ShippingAddVesselPage: React.FC = () => {
     </div>
   );
 };
-

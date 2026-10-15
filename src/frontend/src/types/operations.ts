@@ -20,6 +20,9 @@ export interface Vessel {
   destination: string;
   eta: string;
   etd: string;
+  estimatedEtd?: string;
+  isEstimatedEtd?: boolean;
+  etdRationale?: string;
   status: VesselStatus;
   priority: PriorityLevel;
   currentBerth: string | null;

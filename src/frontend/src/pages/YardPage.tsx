@@ -10,7 +10,7 @@ import { Drawer } from '../components/common/Drawer';
 import { YardBlock } from '../types/operations';
 
 export const YardPage: React.FC = () => {
-  const { yardBlocks, showToast } = useOperations();
+  const { yardBlocks, redistributeYardBlock } = useOperations();
   const [selectedBlock, setSelectedBlock] = useState<YardBlock | null>(null);
 
   const totalInbound = yardBlocks.reduce((acc, y) => acc + y.inboundTeu24h, 0);
@@ -20,11 +20,13 @@ export const YardPage: React.FC = () => {
   ).toFixed(1);
 
   const handleApplyRedistribution = (block: YardBlock) => {
-    showToast(
-      'success',
-      'Yard Transfer Dispatched',
-      `Auto-allocated ${block.suggestedRedistribution?.amountTeu} TEU to ${block.suggestedRedistribution?.targetBlockId}.`
-    );
+    if (block.suggestedRedistribution) {
+      redistributeYardBlock(
+        block.id,
+        block.suggestedRedistribution.targetBlockId,
+        block.suggestedRedistribution.amountTeu
+      );
+    }
     setSelectedBlock(null);
   };
 

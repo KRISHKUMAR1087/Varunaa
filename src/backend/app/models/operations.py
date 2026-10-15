@@ -22,7 +22,9 @@ class Vessel(BaseModel):
     origin: str
     destination: str
     eta: str
-    etd: str
+    etd: Optional[str] = None
+    estimatedEtd: Optional[str] = None
+    isEstimatedEtd: Optional[bool] = None
     status: VesselStatus
     priority: PriorityLevel
     currentBerth: Optional[str] = None

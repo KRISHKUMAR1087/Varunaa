@@ -63,7 +63,7 @@ router.post('/vessels', async (c) => {
           origin: vData.origin || 'Singapore (SGSIN)',
           destination: vData.destination || 'Rotterdam (NLRTM)',
           eta: vData.eta || 'Tomorrow, 12:00 UTC',
-          etd: vData.etd || '+2 Days, 18:00 UTC',
+          etd: vData.etd || vData.estimatedEtd || '+2 Days, 18:00 UTC (Est.)',
           status: (vData.status || 'Arriving').replace(' ', '_'),
           priority: vData.priority || 'Standard',
           assignedBerth: vData.assignedBerth || 'Unassigned',
