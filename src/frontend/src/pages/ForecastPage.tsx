@@ -164,41 +164,70 @@ export const ForecastPage: React.FC = () => {
               />
             </div>
 
-            {/* B04 Trajectory Numbers */}
-            {selectedBerth.id === 'B04' && (
-              <div className="mt-4 p-4 rounded-lg bg-surface-subtle border border-border-subtle space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-text-main font-semibold">B04 Predicted Bottleneck</span>
-                  <span className="text-text-caption">Horizon Breakdown</span>
+            {/* Dynamic Multi-Berth Trajectory Numbers */}
+            {(() => {
+              const bKey = selectedBerthId as keyof typeof forecast.points[0];
+              const getVal = (hr: string) => {
+                const pt = forecast.points.find(p => p.hour === hr);
+                return pt && typeof pt[bKey] === 'number' ? (pt[bKey] as number) : 70;
+              };
+              const nowVal = getVal('Now');
+              const sixH = getVal('+6h');
+              const twelveH = getVal('+12h');
+              const twentyFourH = getVal('+24h');
+              const fortyEightH = getVal('+48h');
+              const seventyTwoH = getVal('+72h');
+              const isBottleneck = Math.max(nowVal, sixH, twelveH, twentyFourH, fortyEightH, seventyTwoH) >= 85;
+
+              return (
+                <div className="mt-4 p-4 rounded-xl bg-surface-subtle border border-border-subtle space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-text-main font-semibold flex items-center gap-1.5">
+                      <span>{selectedBerthId} 72h Predictive Trajectory</span>
+                      {isBottleneck && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          Bottleneck Risk
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-text-caption">0h → 72h Horizons</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+                    <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                      <div className="text-[10px] text-text-caption uppercase font-medium">Now (0h)</div>
+                      <div className="font-semibold text-text-main mt-0.5">{nowVal}%</div>
+                    </div>
+                    <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                      <div className="text-[10px] text-text-caption uppercase font-medium">+6h</div>
+                      <div className="font-semibold text-text-main mt-0.5">{sixH}%</div>
+                    </div>
+                    <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                      <div className="text-[10px] text-text-caption uppercase font-medium">+12h</div>
+                      <div className="font-semibold text-text-main mt-0.5">{twelveH}%</div>
+                    </div>
+                    <div className={`p-2 rounded-lg border ${twentyFourH >= 85 ? 'border-rose-200 bg-rose-50/50' : 'bg-surface border-border-subtle'}`}>
+                      <div className={`text-[10px] font-medium uppercase ${twentyFourH >= 85 ? 'text-rose-700 font-bold' : 'text-text-caption'}`}>
+                        +24h {twentyFourH >= 85 ? 'Peak' : ''}
+                      </div>
+                      <div className={`font-bold mt-0.5 ${twentyFourH >= 85 ? 'text-rose-700' : 'text-text-main'}`}>
+                        {twentyFourH}%
+                      </div>
+                    </div>
+                    <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                      <div className="text-[10px] text-text-caption uppercase font-medium">+48h</div>
+                      <div className="font-semibold text-text-main mt-0.5">{fortyEightH}%</div>
+                    </div>
+                    <div className="bg-surface p-2 rounded-lg border border-border-subtle">
+                      <div className="text-[10px] text-text-caption uppercase font-medium">+72h</div>
+                      <div className="font-semibold text-text-main mt-0.5">{seventyTwoH}%</div>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-text-muted text-center pt-1">
+                    Deterministic time-series model integrating active queue, TEU volume, and crane moves.
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                  <div className="bg-surface p-2 rounded border border-border-subtle">
-                    <div className="text-[11px] text-text-caption">Now</div>
-                    <div className="font-semibold text-text-main mt-0.5">82%</div>
-                  </div>
-                  <div className="bg-surface p-2 rounded border border-border-subtle">
-                    <div className="text-[11px] text-text-caption">6h</div>
-                    <div className="font-semibold text-text-main mt-0.5">86%</div>
-                  </div>
-                  <div className="bg-surface p-2 rounded border border-border-subtle">
-                    <div className="text-[11px] text-text-caption">12h</div>
-                    <div className="font-semibold text-text-main mt-0.5">89%</div>
-                  </div>
-                  <div className="bg-surface p-2 rounded border border-rose-200 bg-rose-50/50">
-                    <div className="text-[11px] text-rose-700">24h Peak</div>
-                    <div className="font-bold text-rose-700 mt-0.5">94%</div>
-                  </div>
-                  <div className="bg-surface p-2 rounded border border-border-subtle">
-                    <div className="text-[11px] text-text-caption">48h</div>
-                    <div className="font-semibold text-text-main mt-0.5">88%</div>
-                  </div>
-                  <div className="bg-surface p-2 rounded border border-border-subtle">
-                    <div className="text-[11px] text-text-caption">72h</div>
-                    <div className="font-semibold text-text-main mt-0.5">79%</div>
-                  </div>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Top Drivers */}
             <div className="mt-5 space-y-3">

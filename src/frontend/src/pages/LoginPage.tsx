@@ -135,9 +135,7 @@ export const LoginPage: React.FC = () => {
               className="flex-1 max-w-2xl"
             >
               <motion.div variants={fadeUp}>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white border border-white/20 text-xs font-semibold uppercase tracking-wider mb-5">
-                  <Zap className="w-3 h-3 text-brand-teal" /> AI-Powered Port Operations Platform
-                </div>
+                
               </motion.div>
               <motion.h1 variants={fadeUp} className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-tight drop-shadow-lg">
                 Navigate the<br />

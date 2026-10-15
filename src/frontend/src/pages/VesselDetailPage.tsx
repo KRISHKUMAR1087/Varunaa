@@ -184,6 +184,31 @@ export const VesselDetailPage: React.FC = () => {
               <span className="text-text-muted">Next Destination:</span>
               <span className="text-text-main">{vessel.destination}</span>
             </div>
+            <div className="flex justify-between py-1 border-b border-border-subtle">
+              <span className="text-text-muted">Estimated Arrival (ETA):</span>
+              <span className="font-semibold text-text-main">{vessel.eta}</span>
+            </div>
+            <div className="flex justify-between items-center py-1 border-b border-border-subtle">
+              <span className="text-text-muted">Estimated Departure (ETD):</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-text-main">{vessel.etd}</span>
+                {vessel.isEstimatedEtd || (vessel.etd && vessel.etd.includes('(Est.)')) ? (
+                  <span
+                    className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-sky-50 text-sky-800 border border-sky-200"
+                    title={vessel.etdRationale || "Calculated by system from operational turnaround"}
+                  >
+                    System Est.
+                  </span>
+                ) : (
+                  <span
+                    className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200"
+                    title="Confirmed carrier departure time"
+                  >
+                    Actual
+                  </span>
+                )}
+              </div>
+            </div>
             <div className="flex justify-between py-1">
               <span className="text-text-muted">Priority Tier:</span>
               <span className="font-semibold text-text-main">{vessel.priority}</span>

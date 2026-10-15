@@ -5,6 +5,11 @@ import {
   Sparkles,
   ArrowRight,
   Zap,
+  KeyRound,
+  X,
+  ExternalLink,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useOperations } from '../../context/OperationsContext';
 import { CopilotMessageContent } from './CopilotMessageContent';
@@ -23,6 +28,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
     setIsCopilotOpen,
     applyOptimization,
     applyRecoveryPlan,
+    showToast,
   } = useOperations();
 
   const [inputQuery, setInputQuery] = useState('');
@@ -32,6 +38,24 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
     description: string;
     action: () => void;
   } | null>(null);
+
+  const [hasApiKey, setHasApiKey] = useState(() => {
+    try {
+      const k = localStorage.getItem('gemini_api_key');
+      return !!(k && !k.includes('your-') && !k.includes('todo') && k.length > 15);
+    } catch {
+      return false;
+    }
+  });
+  const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(() => {
+    try {
+      return localStorage.getItem('gemini_api_key') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [showKeyText, setShowKeyText] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -54,11 +78,20 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
 
   const handleActionClick = (action: { label: string; actionRoute?: string; prompt?: string; requiresConfirmation?: boolean }) => {
     if (action.prompt) {
+      if (action.prompt === 'connect api key' || action.label.toLowerCase().includes('connect gemini')) {
+        setIsKeyModalOpen(true);
+        return;
+      }
       handleChipClick(action.prompt);
       return;
     }
 
     const lowerLabel = action.label.toLowerCase();
+
+    if (lowerLabel.includes('connect gemini') || lowerLabel.includes('api key')) {
+      setIsKeyModalOpen(true);
+      return;
+    }
 
     // Check if action changes state directly
     if (lowerLabel.includes('apply optimization')) {
@@ -95,6 +128,25 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
     }
   };
 
+  const handleSaveApiKey = () => {
+    const trimmed = apiKeyInput.trim();
+    if (!trimmed) {
+      localStorage.removeItem('gemini_api_key');
+      setHasApiKey(false);
+      showToast('info', 'API Key Removed', 'Reverted to PortsPilot local telemetry intelligence.');
+      setIsKeyModalOpen(false);
+      return;
+    }
+    if (trimmed.length < 15 || trimmed.includes('your-')) {
+      showToast('error', 'Invalid API Key', 'Please enter a valid Google Gemini API key (starts with AIza...).');
+      return;
+    }
+    localStorage.setItem('gemini_api_key', trimmed);
+    setHasApiKey(true);
+    showToast('success', 'Gemini API Key Connected', 'Live Google Gemini reasoning is now active for all inquiries.');
+    setIsKeyModalOpen(false);
+  };
+
   const quickChips = [
     'Why is B04 at risk?',
     'What happens if C03 fails?',
@@ -106,6 +158,27 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
 
   return (
     <div className={`flex flex-col h-full bg-surface ${embedded ? 'rounded-3xl border border-border-subtle shadow-[0_8px_30px_rgb(0,0,0,0.04)]' : ''}`}>
+      {/* AI Reasoning Engine Status Bar */}
+      <div className="px-4 py-2 bg-surface-subtle/80 border-b border-border-subtle flex items-center justify-between text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-500 animate-pulse' : 'bg-brand-teal'}`} />
+          <span className="font-semibold text-text-main text-[11px]">
+            {hasApiKey ? 'Google Gemini 2.0 Live' : 'PortsPilot Local Engine'}
+          </span>
+          <span className="text-text-muted text-[10px] hidden sm:inline">
+            {hasApiKey ? '• Open-Domain & Port Intelligence' : '• Built-in Operational Knowledge'}
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIsKeyModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-surface hover:bg-slate-100 text-text-main border border-border-subtle transition-colors shadow-xs cursor-pointer"
+        >
+          <KeyRound className="w-3 h-3 text-brand-teal" />
+          <span>{hasApiKey ? 'Configure Key' : 'Connect Gemini API Key'}</span>
+        </button>
+      </div>
+
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         {copilotMessages.map(msg => (
@@ -228,6 +301,105 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
         cancelLabel="Cancel"
         type="warning"
       />
+
+      {/* Gemini API Key Connection Modal */}
+      {isKeyModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md bg-surface border border-border-subtle rounded-2xl shadow-modal p-6 space-y-5">
+            <button
+              onClick={() => setIsKeyModalOpen(false)}
+              className="absolute top-4 right-4 text-text-caption hover:text-text-main transition-colors p-1"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-brand-teal flex items-center justify-center shrink-0">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-text-main">
+                  Connect Google Gemini API
+                </h3>
+                <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                  Enter your Google Gemini API key to unlock full, open-domain generative AI reasoning (answering any question from &quot;what is water&quot; to complex multi-vessel berth optimization).
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-text-main block">
+                Google Gemini API Key
+              </label>
+              <div className="relative flex items-center">
+                <input
+                  type={showKeyText ? 'text' : 'password'}
+                  placeholder="AIzaSy..."
+                  value={apiKeyInput}
+                  onChange={e => setApiKeyInput(e.target.value)}
+                  className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-main pr-10 focus:outline-hidden focus:border-brand-teal focus:ring-1 focus:ring-brand-teal"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKeyText(!showKeyText)}
+                  className="absolute right-3 text-text-muted hover:text-text-main transition-colors cursor-pointer"
+                >
+                  {showKeyText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-text-muted pt-1">
+                <span>Stored securely in your local browser storage</span>
+                <a
+                  href="https://aistudio.google.com/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-teal hover:underline flex items-center gap-1 font-medium"
+                >
+                  <span>Get free key</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+              {hasApiKey ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApiKeyInput('');
+                    localStorage.removeItem('gemini_api_key');
+                    setHasApiKey(false);
+                    showToast('info', 'Key Removed', 'Reverted to PortsPilot local telemetry engine.');
+                    setIsKeyModalOpen(false);
+                  }}
+                  className="text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"
+                >
+                  Disconnect Key
+                </button>
+              ) : (
+                <span className="text-[11px] text-text-caption">Status: Local telemetry mode</span>
+              )}
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsKeyModalOpen(false)}
+                  className="px-3.5 py-2 text-xs font-medium text-text-muted hover:text-text-main bg-surface-subtle hover:bg-slate-200 rounded-xl border border-border-subtle transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveApiKey}
+                  className="px-4 py-2 text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 rounded-xl transition-all shadow-[0_8px_30px_rgb(0,0,0,0.04)] cursor-pointer"
+                >
+                  Save &amp; Connect
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
