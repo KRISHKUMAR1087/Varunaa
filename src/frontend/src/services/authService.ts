@@ -165,11 +165,11 @@ export class AuthService {
    * Email + Password Login using real Supabase Auth
    */
   public static async login(email: string, password: string): Promise<User> {
-    if (email.trim().toLowerCase() === 'super@portspilot.com' && password === 'super123') {
+    if (email.trim().toLowerCase() === 'super@Varunaa.com' && password === 'super123') {
       const mockSuperAdmin: User = {
         id: 'mock-super-admin-id',
         name: 'Global Administrator',
-        email: 'super@portspilot.com',
+        email: 'super@Varunaa.com',
         role: 'super-admin',
         authProvider: 'demo',
       };
@@ -346,7 +346,7 @@ export class AuthService {
     const updated: User = {
       id: stored?.id || 'demo-user',
       name: stored?.name || 'Operator',
-      email: stored?.email || 'operator@portspilot.demo',
+      email: stored?.email || 'operator@Varunaa.demo',
       role: role,
       authProvider: stored?.authProvider || 'demo',
     };
@@ -362,7 +362,7 @@ export class AuthService {
     const user: User = {
       id: role === 'super-admin' ? 'mock-super-admin-id' : role === 'admin' ? 'demo-admin-id' : 'demo-agent-id',
       name: role === 'super-admin' ? 'Global Administrator' : role === 'admin' ? 'Capt. M. Vance' : 'James Harrington',
-      email: role === 'super-admin' ? 'super@portspilot.com' : role === 'admin' ? 'admin@portspilot.demo' : 'agent@portspilot.demo',
+      email: role === 'super-admin' ? 'super@Varunaa.com' : role === 'admin' ? 'admin@Varunaa.demo' : 'agent@Varunaa.demo',
       role: role,
       authProvider: 'demo',
     };

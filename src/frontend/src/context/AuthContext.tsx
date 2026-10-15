@@ -185,7 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const isDemoUser = user?.authProvider === 'demo' || user?.email?.toLowerCase() === 'portspilot.admin@gmail.com';
+  const isDemoUser = user?.authProvider === 'demo' || user?.email?.toLowerCase() === 'Varunaa.admin@gmail.com';
 
   return (
     <AuthContext.Provider

@@ -175,7 +175,7 @@ export const ShippingProfilePage: React.FC = () => {
             </div>
             <p className="text-xs text-text-muted flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-text-caption" />
-              <span>{user?.email || 'agent@portspilot.demo'}</span>
+              <span>{user?.email || 'agent@Varunaa.demo'}</span>
             </p>
           </div>
         </div>
