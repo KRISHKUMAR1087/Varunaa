@@ -268,7 +268,7 @@ export const SettingsPage: React.FC = () => {
                       {user?.role === 'admin' ? 'Port Operations Admin' : 'Shipping Agent'}
                     </span>
                   </div>
-                  <p className="text-text-muted text-xs mt-0.5">{user?.email || 'admin@portspilot.demo'}</p>
+                  <p className="text-text-muted text-xs mt-0.5">{user?.email || 'admin@Varunaa.demo'}</p>
                   <div className="flex items-center gap-3 text-[11px] text-text-caption mt-1.5">
                     <span>Provider: <strong className="text-text-main font-semibold capitalize">{user?.authProvider || 'Demo Session'}</strong></span>
                     <span>•</span>
@@ -321,7 +321,7 @@ export const SettingsPage: React.FC = () => {
                     type="email"
                     value={emailInput}
                     onChange={e => setEmailInput(e.target.value)}
-                    placeholder="new.email@portspilot.com"
+                    placeholder="new.email@Varunaa.com"
                     className="w-full bg-surface-subtle border border-border-subtle rounded-xl pl-9 pr-3 py-2 text-text-main focus:outline-hidden focus:border-sky-500 text-xs"
                   />
                 </div>

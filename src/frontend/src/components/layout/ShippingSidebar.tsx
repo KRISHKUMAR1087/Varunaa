@@ -285,7 +285,7 @@ export const ShippingSidebar: React.FC<ShippingSidebarProps> = ({
                   {user?.name || 'Shipping Agent'}
                 </div>
                 <div className="text-[11px] text-text-muted truncate">
-                  {user?.email || 'agent@portspilot.demo'}
+                  {user?.email || 'agent@Varunaa.demo'}
                 </div>
               </div>
             </div>

@@ -392,7 +392,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 hover:text-amber-600 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   <Shield className="w-3.5 h-3.5" />
-                  Super Admin Portal (super@portspilot.com)
+                  Super Admin Portal (super@Varunaa.com)
                 </Link>
               </div>
 

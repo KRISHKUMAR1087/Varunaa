@@ -107,7 +107,7 @@ export const LoginPage: React.FC = () => {
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-brand-teal text-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <Ship className="w-5 h-5" />
               </div>
-              <span className="text-2xl font-bold tracking-tight text-white drop-shadow-md">PortPilot</span>
+              <span className="text-2xl font-bold tracking-tight text-white drop-shadow-md">Varunaa</span>
             </div>
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
               <a href="#features" className="hover:text-white transition-colors">Features</a>
@@ -144,7 +144,7 @@ export const LoginPage: React.FC = () => {
                 </span>
               </motion.h1>
               <motion.p variants={fadeUp} className="text-lg sm:text-xl text-white/85 leading-relaxed mt-5 font-medium max-w-xl">
-                PortPilot is the AI-driven operating system for modern maritime terminals. Eliminate congestion, optimize berth allocations, and track turnaround times in real-time.
+                Varunaa is the AI-driven operating system for modern maritime terminals. Eliminate congestion, optimize berth allocations, and track turnaround times in real-time.
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap gap-4 mt-8">
                 <a href="/auth/signup"
@@ -297,7 +297,7 @@ export const LoginPage: React.FC = () => {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-teal mb-3">Core Platform</span>
             <h2 className="text-3xl sm:text-4xl font-bold text-text-main tracking-tight">Intelligence at every dock.</h2>
-            <p className="text-text-muted mt-4 text-lg leading-relaxed">PortPilot replaces whiteboards and spreadsheets with predictive AI, giving port authorities complete visibility over every operation.</p>
+            <p className="text-text-muted mt-4 text-lg leading-relaxed">Varunaa replaces whiteboards and spreadsheets with predictive AI, giving port authorities complete visibility over every operation.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -508,7 +508,7 @@ export const LoginPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                quote: 'PortPilot reduced our average vessel turnaround by 38%. The AI optimizer alone paid for the annual subscription in the first month.',
+                quote: 'Varunaa reduced our average vessel turnaround by 38%. The AI optimizer alone paid for the annual subscription in the first month.',
                 name: 'James Harrington',
                 role: 'Director of Operations, Meridian Terminals',
               },
@@ -548,7 +548,7 @@ export const LoginPage: React.FC = () => {
               <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-teal mb-4">Enterprise Grade</span>
               <h2 className="text-3xl sm:text-4xl font-bold text-text-main tracking-tight mb-6">Security and compliance you can trust.</h2>
               <p className="text-text-muted leading-relaxed mb-8 text-base">
-                PortPilot is built on ISO 27001 and SOC 2 Type II certified infrastructure. Your operational data is encrypted at rest and in transit, with fine-grained role-based access control across every module.
+                Varunaa is built on ISO 27001 and SOC 2 Type II certified infrastructure. Your operational data is encrypted at rest and in transit, with fine-grained role-based access control across every module.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -596,7 +596,7 @@ export const LoginPage: React.FC = () => {
             Ready to modernise your port operations?
           </h2>
           <p className="text-white/85 text-lg leading-relaxed mb-8">
-            Join 30+ terminals worldwide using PortPilot to reduce congestion, save millions in demurrage, and give every stakeholder real-time visibility.
+            Join 30+ terminals worldwide using Varunaa to reduce congestion, save millions in demurrage, and give every stakeholder real-time visibility.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
@@ -624,7 +624,7 @@ export const LoginPage: React.FC = () => {
                 <div className="w-9 h-9 rounded-lg bg-brand-teal flex items-center justify-center">
                   <Ship className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-bold text-text-main text-lg tracking-tight">PortPilot</span>
+                <span className="font-bold text-text-main text-lg tracking-tight">Varunaa</span>
               </div>
               <p className="text-sm text-text-muted leading-relaxed">The AI-powered operating system for modern maritime terminals.</p>
             </div>
@@ -684,7 +684,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="border-t border-border-subtle pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-sm text-text-muted font-medium">
-              &copy; {new Date().getFullYear()} PortPilot Systems. All rights reserved.
+              &copy; {new Date().getFullYear()} Varunaa Systems. All rights reserved.
             </div>
             <div className="flex items-center gap-6 text-sm font-medium text-text-muted">
               <a href="#" className="hover:text-brand-teal transition-colors">Privacy</a>

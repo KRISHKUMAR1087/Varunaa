@@ -33,10 +33,10 @@ const INITIAL_PORTS = [
 
 // System Users Directory
 const INITIAL_USERS = [
-  { id: 'USR-001', name: 'KRISHKUMAR DARJI', email: 'portspilot.admin@gmail.com', role: 'admin', provider: 'google', status: 'Active', joined: '2026-09-10', lastActive: '2 mins ago' },
-  { id: 'USR-002', name: 'Capt. M. Vance', email: 'admin@portspilot.demo', role: 'admin', provider: 'demo', status: 'Active', joined: '2026-08-15', lastActive: 'Just now' },
-  { id: 'USR-003', name: 'James Harrington', email: 'agent@portspilot.demo', role: 'ship-agent', provider: 'demo', status: 'Active', joined: '2026-08-15', lastActive: '5 mins ago' },
-  { id: 'USR-004', name: 'Global Administrator', email: 'super@portspilot.com', role: 'super-admin', provider: 'demo', status: 'Active', joined: '2026-01-01', lastActive: 'Active Now' },
+  { id: 'USR-001', name: 'KRISHKUMAR DARJI', email: 'Varunaa.admin@gmail.com', role: 'admin', provider: 'google', status: 'Active', joined: '2026-09-10', lastActive: '2 mins ago' },
+  { id: 'USR-002', name: 'Capt. M. Vance', email: 'admin@Varunaa.demo', role: 'admin', provider: 'demo', status: 'Active', joined: '2026-08-15', lastActive: 'Just now' },
+  { id: 'USR-003', name: 'James Harrington', email: 'agent@Varunaa.demo', role: 'ship-agent', provider: 'demo', status: 'Active', joined: '2026-08-15', lastActive: '5 mins ago' },
+  { id: 'USR-004', name: 'Global Administrator', email: 'super@Varunaa.com', role: 'super-admin', provider: 'demo', status: 'Active', joined: '2026-01-01', lastActive: 'Active Now' },
   { id: 'USR-005', name: 'Sarah Chen (Apex Maritime)', email: 'sarah.chen@apex-maritime.com', role: 'ship-agent', provider: 'email', status: 'Active', joined: '2026-09-01', lastActive: '1 hour ago' },
   { id: 'USR-006', name: 'Marcus Brody (Maersk Agency)', email: 'm.brody@maersk-agents.org', role: 'ship-agent', provider: 'email', status: 'Suspended', joined: '2026-08-20', lastActive: '3 days ago' },
   { id: 'USR-007', name: 'Elena Rostova (Evergreen)', email: 'elena.r@evergreen-marine.com', role: 'ship-agent', provider: 'google', status: 'Active', joined: '2026-09-05', lastActive: '12 mins ago' },
@@ -44,10 +44,10 @@ const INITIAL_USERS = [
 
 // Security Audit Log Stream
 const AUDIT_LOGS = [
-  { id: 'LOG-101', timestamp: '21:52:14 IST', event: 'Super Admin Session Authorized', user: 'super@portspilot.com', ip: '182.74.55.12', status: 'SUCCESS' },
-  { id: 'LOG-102', timestamp: '21:48:02 IST', event: 'Google OAuth Session Hydrated', user: 'portspilot.admin@gmail.com', ip: '103.22.40.81', status: 'SUCCESS' },
+  { id: 'LOG-101', timestamp: '21:52:14 IST', event: 'Super Admin Session Authorized', user: 'super@Varunaa.com', ip: '182.74.55.12', status: 'SUCCESS' },
+  { id: 'LOG-102', timestamp: '21:48:02 IST', event: 'Google OAuth Session Hydrated', user: 'Varunaa.admin@gmail.com', ip: '103.22.40.81', status: 'SUCCESS' },
   { id: 'LOG-103', timestamp: '21:30:19 IST', event: 'Supabase RLS Policy Evaluation', entity: 'vessels_table', ip: 'Internal Database Gateway', status: 'SUCCESS' },
-  { id: 'LOG-104', timestamp: '21:15:44 IST', event: 'Berth Allocation Optimization Plan Execution', user: 'admin@portspilot.demo', ip: '192.168.1.104', status: 'SUCCESS' },
+  { id: 'LOG-104', timestamp: '21:15:44 IST', event: 'Berth Allocation Optimization Plan Execution', user: 'admin@Varunaa.demo', ip: '192.168.1.104', status: 'SUCCESS' },
   { id: 'LOG-105', timestamp: '20:58:10 IST', event: 'Failed Password Attempt (Block Triggered)', user: 'm.brody@maersk-agents.org', ip: '45.112.90.11', status: 'BLOCKED' },
 ];
 
@@ -131,7 +131,7 @@ export const SuperAdminPortalPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <div className="hidden sm:block text-right">
                 <div className="text-xs font-semibold text-white">{authUser?.name || 'Global Administrator'}</div>
-                <div className="text-[10px] text-slate-400">{authUser?.email || 'super@portspilot.com'}</div>
+                <div className="text-[10px] text-slate-400">{authUser?.email || 'super@Varunaa.com'}</div>
               </div>
               <button
                 onClick={handleLogout}
@@ -165,7 +165,7 @@ export const SuperAdminPortalPage: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-text-muted bg-surface px-3 py-1.5 rounded-xl border border-border-subtle shadow-xs">
-              Single Account Governance: <strong className="text-text-main">super@portspilot.com</strong>
+              Single Account Governance: <strong className="text-text-main">super@Varunaa.com</strong>
             </span>
           </div>
         </div>
