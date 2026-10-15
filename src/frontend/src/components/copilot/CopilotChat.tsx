@@ -12,6 +12,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { useOperations } from '../../context/OperationsContext';
+import { GeminiCopilotService } from '../../services/geminiCopilotService';
 import { CopilotMessageContent } from './CopilotMessageContent';
 import { ConfirmationModal } from '../common/ConfirmationModal';
 
@@ -40,17 +41,18 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
   } | null>(null);
 
   const [hasApiKey, setHasApiKey] = useState(() => {
-    try {
-      const k = localStorage.getItem('gemini_api_key');
-      return !!(k && !k.includes('your-') && !k.includes('todo') && k.length > 15);
-    } catch {
-      return false;
-    }
+    return GeminiCopilotService.hasConfiguredKey();
   });
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(() => {
     try {
-      return localStorage.getItem('gemini_api_key') || '';
+      const meta = import.meta as { env?: Record<string, string> };
+      return (
+        localStorage.getItem('gemini_api_key') ||
+        meta?.env?.VITE_GEMINI_API_KEY ||
+        meta?.env?.GEMINI_API_KEY ||
+        ''
+      );
     } catch {
       return '';
     }
@@ -138,7 +140,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
       return;
     }
     if (trimmed.length < 15 || trimmed.includes('your-')) {
-      showToast('error', 'Invalid API Key', 'Please enter a valid Google Gemini API key (starts with AIza...).');
+      showToast('error', 'Invalid API Key', 'Please enter a valid Google Gemini API key.');
       return;
     }
     localStorage.setItem('gemini_api_key', trimmed);
@@ -163,7 +165,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-500 animate-pulse' : 'bg-brand-teal'}`} />
           <span className="font-semibold text-text-main text-[11px]">
-            {hasApiKey ? 'Google Gemini 2.0 Live' : 'Varunaa Local Engine'}
+            {hasApiKey ? 'Google Gemini Live' : 'Varunaa Local Engine'}
           </span>
           <span className="text-text-muted text-[10px] hidden sm:inline">
             {hasApiKey ? '• Open-Domain & Port Intelligence' : '• Built-in Operational Knowledge'}
