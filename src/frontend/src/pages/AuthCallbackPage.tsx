@@ -36,27 +36,30 @@ export const AuthCallbackPage: React.FC = () => {
         // PKCE authorization code
         const code = params.get('code');
 
+        
         if (code) {
-          // Check if session was already established (e.g. by detectSessionInUrl)
+          // Check whether Supabase has already established the session.
           const { data: initialSession } = await supabase.auth.getSession();
+
           if (!initialSession?.session?.user) {
             const { error: exchangeError } =
               await supabase.auth.exchangeCodeForSession(code);
 
             if (exchangeError) {
-              // Check if session was established concurrently
+              // Another auth handler may have established the session meanwhile.
               const { data: checkSession } = await supabase.auth.getSession();
+
               if (!checkSession?.session?.user) {
                 console.error(
                   'Supabase code exchange failed:',
                   exchangeError
                 );
+
                 throw exchangeError;
               }
             }
           }
         }
-
         // Get the authenticated session
         const {
           data: { session },
