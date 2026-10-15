@@ -34,7 +34,7 @@ export const PortAdminSetupPage: React.FC = () => {
           <div className="w-9 h-9 rounded-xl bg-brand-teal flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
             <Anchor className="w-4 h-4 text-white" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-text-main">PortsPilot Setup</span>
+          <span className="text-xl font-bold tracking-tight text-text-main">Varunaa Setup</span>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />

@@ -348,3 +348,238 @@ export interface ShippingDocument {
   ownerId: string;
 }
 
+// ============================================================================
+// VARUNA UNIFIED OPERATIONAL EVENT MODEL & DELAY INTELLIGENCE TYPES
+// ============================================================================
+
+export type DelayCategory =
+  | 'vessel_late_arrival'
+  | 'anchorage_bunching'
+  | 'berth_conflict'
+  | 'crane_breakdown'
+  | 'low_productivity'
+  | 'yard_congestion'
+  | 'inland_transport_shortage'
+  | 'customs_inspection_hold'
+  | 'weather_restriction'
+  | 'carrier_schedule_revision';
+
+export type OperationalProvenance =
+  | 'LIVE_API'
+  | 'OFFICIAL_PORT_PORTAL'
+  | 'HISTORICAL_IMPORTED'
+  | 'OPERATOR_ENTERED'
+  | 'SYSTEM_ESTIMATED'
+  | 'SYNTHETIC_BENCHMARK';
+
+export interface OperationalEvidence {
+  telemetrySource: string;
+  recordedTimestamp: string;
+  confidenceScore: number; // 0.0 to 1.0 (e.g. 0.94)
+  rawObservation: string;
+  isVerified: boolean;
+  missingData?: string;
+  dataProvenance: OperationalProvenance;
+}
+
+export interface DelayDecompositionItem {
+  id: string;
+  category: DelayCategory;
+  categoryTitle: string;
+  stageName: string;
+  intervalStart: string;
+  intervalEnd: string;
+  delayMinutes: number;
+  netContributionMinutes: number; // Disjoint non-overlapping delay contribution
+  evidence: OperationalEvidence;
+  affectedAsset: string;
+  actionableIntervention: string;
+  recoverableMinutes: number;
+  interventionCostUsd: number;
+  interventionFeasibility: 'High' | 'Medium' | 'Low' | 'Infeasible';
+  tradeOffs: string;
+}
+
+export type PortCallStage =
+  | '1_ESTIMATED_ARRIVAL'
+  | '2_ACTUAL_ARRIVAL'
+  | '3_ANCHORAGE_WAIT'
+  | '4_BERTH_ASSIGNMENT'
+  | '5_CRANE_ALLOCATION'
+  | '6_OPERATIONS_PROGRESS'
+  | '7_INTERRUPTION_RECOVERY'
+  | '8_CARGO_COMPLETION'
+  | '9_DEPARTURE_READINESS'
+  | '10_ACTUAL_DEPARTURE'
+  | '11_DOWNSTREAM_PROPAGATION';
+
+export interface PortCallTimelineStep {
+  stage: PortCallStage;
+  label: string;
+  plannedTime: string;
+  actualTime?: string;
+  revisedTime?: string;
+  status: 'COMPLETED' | 'IN_PROGRESS' | 'SCHEDULED' | 'DISRUPTED' | 'RECOVERED';
+  varianceMinutes: number;
+  durationMinutes: number;
+  description: string;
+  evidence?: OperationalEvidence;
+}
+
+export interface DownstreamLegPropagation {
+  portCode: string;
+  portName: string;
+  originalEta: string;
+  propagatedEta: string;
+  delayHours: number;
+  connectingShipmentsAtRisk: number;
+  transitSpeedKnots: number;
+  distanceNm: number;
+  isFeederCatchable: boolean;
+  notes: string;
+}
+
+export interface TrackedContainerShipment {
+  containerId: string;
+  isoType: string; // e.g. 40HC, 20GP, 40REEF
+  vesselId: string;
+  vesselName: string;
+  bookingRef: string;
+  consignee: string;
+  commodity: string;
+  status:
+    | 'Onboard'
+    | 'Discharging'
+    | 'Yard Stack'
+    | 'Customs Hold'
+    | 'Inspection Pending'
+    | 'Drayage Dispatched'
+    | 'Delivered'
+    | 'Missed Transshipment';
+  dwellHours: number;
+  yardBlockId: string;
+  customsCleared: boolean;
+  holdReason?: string;
+  inlandMode: 'Truck' | 'Rail' | 'Barge';
+  transshipmentConnectingVessel?: string;
+  transshipmentDeparture?: string;
+  isConnectionMissed: boolean;
+  deliveryDeadlinesHoursLeft: number;
+}
+
+export interface WeatherObservation {
+  timestamp: string;
+  stationName: string;
+  windSpeedKnots: number;
+  windGustKnots: number;
+  waveHeightMeters: number;
+  visibilityNm: number;
+  precipitationMm: number;
+  conditionDescription: string;
+  isCraneCutoffExceeded: boolean; // Wind > 20 m/s (~38.8 kts)
+  isPilotageSuspended: boolean;   // Wave > 2.5m or Vis < 0.5 nm
+  provenance: OperationalProvenance;
+}
+
+export interface PortCallRecord {
+  id: string;
+  vesselId: string;
+  vesselName: string;
+  vesselType: string;
+  imo: string;
+  voyageNumber: string;
+  portName: string;
+  terminalName: string;
+  assignedBerthId: string;
+  plannedArrival: string;
+  actualArrival: string;
+  anchorageEntry?: string;
+  anchorageExit?: string;
+  plannedBerthing: string;
+  actualBerthing?: string;
+  operationsStart?: string;
+  operationsEnd?: string;
+  plannedDeparture: string;
+  actualDeparture?: string;
+  totalManifestTeu: number;
+  completedTeu: number;
+  remainingTeu: number;
+  handlingPaceMovesPerHour: number;
+  assignedCraneIds: string[];
+  timeline: PortCallTimelineStep[];
+  delays: DelayDecompositionItem[];
+  downstreamPropagation: DownstreamLegPropagation[];
+  trackedContainers: TrackedContainerShipment[];
+  netTotalDelayMinutes: number;
+  primaryCauseCategory: DelayCategory;
+  recoveryApplied?: boolean;
+}
+
+export interface HistoricalDelayBottleneck {
+  bottleneckId: string;
+  category: DelayCategory;
+  categoryTitle: string;
+  dimensionType: 'berth' | 'crane' | 'shift' | 'day_of_week' | 'route' | 'carrier' | 'cargo_type';
+  dimensionValue: string;
+  affectedShipmentsCount: number;
+  sampleSize: number;
+  medianDelayHours: number;
+  percentile90DelayHours: number;
+  totalAccumulatedDelayHours: number;
+  coverageRatio: number; // 0.0 - 1.0 of records having confirmed telemetry
+  isRepeatingPattern: boolean;
+  operationalEvidenceSummary: string;
+  alternativeHypotheses: string[];
+  recommendedIntervention: string;
+  estimatedRecoverableHours: number;
+  costUsd: number;
+  operationalRisks: string;
+  feasibilityRating: 'High' | 'Medium' | 'Low';
+}
+
+export interface ThreeWayPlanComparison {
+  baselinePlan: {
+    totalDelayHours: number;
+    avgVesselWaitHours: number;
+    berthUtilizationPercent: number;
+    craneUtilizationPercent: number;
+    yardDwellTimeDays: number;
+    missedTransshipmentsCount: number;
+    projectedDemurrageUsd: number;
+    cargoCompletionTimestamp: string;
+  };
+  disruptedPlan: {
+    totalDelayHours: number;
+    avgVesselWaitHours: number;
+    berthUtilizationPercent: number;
+    craneUtilizationPercent: number;
+    yardDwellTimeDays: number;
+    missedTransshipmentsCount: number;
+    projectedDemurrageUsd: number;
+    cargoCompletionTimestamp: string;
+    knockOnVesselsAffected: number;
+  };
+  recoveryPlan: {
+    totalDelayHours: number;
+    avgVesselWaitHours: number;
+    berthUtilizationPercent: number;
+    craneUtilizationPercent: number;
+    yardDwellTimeDays: number;
+    missedTransshipmentsCount: number;
+    projectedDemurrageUsd: number;
+    cargoCompletionTimestamp: string;
+    delayRecoveredHours: number;
+    additionalInterventionCostUsd: number;
+    netSavingsUsd: number;
+    knockOnMitigatedCount: number;
+    actionSteps: {
+      order: number;
+      actionTitle: string;
+      resourceAffected: string;
+      expectedDurationMinutes: number;
+      feasibilityNotes: string;
+    }[];
+  };
+}
+
+

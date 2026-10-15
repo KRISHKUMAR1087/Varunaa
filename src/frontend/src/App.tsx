@@ -32,6 +32,9 @@ const AlertsPage = React.lazy(() => import('./pages/AlertsPage').then(m => ({ de
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const PortAdminSetupPage = React.lazy(() => import('./pages/PortAdminSetupPage').then(m => ({ default: m.PortAdminSetupPage })));
 const SuperAdminPortalPage = React.lazy(() => import('./pages/SuperAdminPortalPage').then(m => ({ default: m.SuperAdminPortalPage })));
+const DelayLabPage = React.lazy(() => import('./pages/DelayLabPage').then(m => ({ default: m.DelayLabPage })));
+const VoyageTwinPage = React.lazy(() => import('./pages/VoyageTwinPage').then(m => ({ default: m.VoyageTwinPage })));
+const ScenarioVerificationPage = React.lazy(() => import('./pages/ScenarioVerificationPage').then(m => ({ default: m.ScenarioVerificationPage })));
 
 // Shipping Agency Pages
 const ShippingDashboardPage = React.lazy(() => import('./pages/shipping/ShippingDashboardPage').then(m => ({ default: m.ShippingDashboardPage })));
@@ -175,6 +178,8 @@ export const App: React.FC = () => {
                     <Route path="/operations/board" element={<OperationsBoardPage />} />
 
                     {/* Intelligence Group */}
+                    <Route path="/intelligence/delays" element={<DelayLabPage />} />
+                    <Route path="/intelligence/voyage-twin" element={<VoyageTwinPage />} />
                     <Route path="/intelligence/forecast" element={<ForecastPage />} />
                     <Route path="/copilot" element={<CopilotPage />} />
                     <Route path="/intelligence/routes" element={<RoutesPage />} />
@@ -183,6 +188,7 @@ export const App: React.FC = () => {
                     <Route path="/decision/optimizer" element={<OptimizerPage />} />
                     <Route path="/decision/simulator" element={<SimulatorPage />} />
                     <Route path="/decision/planner" element={<PlannerPage />} />
+                    <Route path="/decision/verification" element={<ScenarioVerificationPage />} />
 
                     {/* Analytics */}
                     <Route path="/analytics" element={<AnalyticsPage />} />
@@ -195,10 +201,13 @@ export const App: React.FC = () => {
                     {/* Admin Aliases */}
                     <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/admin/dashboard" element={<DashboardPage />} />
+                    <Route path="/admin/delays" element={<DelayLabPage />} />
+                    <Route path="/admin/voyage-twin" element={<VoyageTwinPage />} />
                     <Route path="/admin/operations" element={<OperationsBoardPage />} />
                     <Route path="/admin/optimizer" element={<OptimizerPage />} />
                     <Route path="/admin/simulator" element={<SimulatorPage />} />
                     <Route path="/admin/planner" element={<PlannerPage />} />
+                    <Route path="/admin/verification" element={<ScenarioVerificationPage />} />
                     <Route path="/admin/forecast" element={<ForecastPage />} />
                     <Route path="/admin/copilot" element={<CopilotPage />} />
                     <Route path="/admin/routes" element={<RoutesPage />} />

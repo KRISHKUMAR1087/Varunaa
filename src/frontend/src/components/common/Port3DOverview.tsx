@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
@@ -42,6 +43,7 @@ export const Port3DOverview: React.FC<Port3DOverviewProps> = ({
   heightClass = 'h-[440px] sm:h-[500px] lg:h-[560px]',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const { isDark } = useTheme();
   const { isDemoUser } = useAuth();
   const {
@@ -1383,6 +1385,31 @@ export const Port3DOverview: React.FC<Port3DOverviewProps> = ({
               {selectedEntity.note}
             </p>
           )}
+
+          <div className="pt-2">
+            {selectedEntity.type === 'vessel' ? (
+              <button
+                onClick={() => navigate('/intelligence/voyage-twin')}
+                className="w-full py-1.5 px-3 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-colors shadow-xs cursor-pointer"
+              >
+                Open Voyage Digital Twin →
+              </button>
+            ) : selectedEntity.type === 'crane' ? (
+              <button
+                onClick={() => navigate('/decision/simulator')}
+                className="w-full py-1.5 px-3 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-colors shadow-xs cursor-pointer"
+              >
+                Diagnose Breakdown & Recover →
+              </button>
+            ) : selectedEntity.type === 'berth' ? (
+              <button
+                onClick={() => navigate('/decision/optimizer')}
+                className="w-full py-1.5 px-3 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-colors shadow-xs cursor-pointer"
+              >
+                Optimize Berth Allocation →
+              </button>
+            ) : null}
+          </div>
         </div>
       )}
 

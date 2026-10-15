@@ -16,7 +16,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({ onSelectRole, userNa
             <Ship className="w-5 h-5" />
           </div>
           <h2 className="text-xl font-bold text-text-main tracking-tight">
-            How will you use PortsPilot AI?
+            How will you use Varunaa AI?
           </h2>
           <p className="text-xs text-text-muted max-w-sm mx-auto">
             {userName ? `Welcome, ${userName}. ` : ''}

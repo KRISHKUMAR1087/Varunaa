@@ -174,7 +174,7 @@ export const ShippingSidebar: React.FC<ShippingSidebarProps> = ({
             </div>
             <div className="min-w-0 flex-1 flex flex-col justify-center">
               <span className="font-bold text-sm tracking-tight text-text-main truncate leading-none mb-1">
-                PortsPilot
+                Varunaa
               </span>
               <span className="text-xs font-medium text-text-muted truncate leading-none">
                 Shipping Operations

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   TrendingDown,
   TrendingUp,
   Zap,
   ArrowDownRight,
+  ExternalLink,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -168,14 +170,23 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Featured AI Impact Banner */}
       <div className="bg-surface p-6 rounded-3xl border border-border-subtle shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
-        <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-subtle pb-3">
           <span className="text-xs font-semibold uppercase tracking-wider text-text-main flex items-center gap-2">
             <Zap className="w-4 h-4 text-brand-teal" />
-            Impact of PortsPilot Optimization
+            Impact of Varunaa Optimization
           </span>
-          <span className="text-xs text-text-caption">
-            Audited over {dateRange.toUpperCase()} rolling period
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-text-caption">
+              Audited over {dateRange.toUpperCase()} rolling period
+            </span>
+            <Link
+              to="/intelligence/delays"
+              className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-brand-teal/10 hover:bg-brand-teal/20 text-brand-teal rounded-lg transition-colors"
+            >
+              <span>Delay Investigation Lab</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
@@ -252,7 +263,7 @@ export const AnalyticsPage: React.FC = () => {
                 <Area
                   type="monotone"
                   dataKey="aiWait"
-                  name="PortsPilot AI"
+                  name="Varunaa AI"
                   stroke="#0EA5A8"
                   fill="#0EA5A8"
                   fillOpacity={0.25}
@@ -288,7 +299,7 @@ export const AnalyticsPage: React.FC = () => {
                   }}
                 />
                 <Bar dataKey="standardTurnaround" name="Standard" fill={isDark ? '#1D4655' : '#CBD5E1'} radius={[3, 3, 0, 0]} />
-                <Bar dataKey="optimizedTurnaround" name="PortsPilot AI" fill="#0EA5A8" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="optimizedTurnaround" name="Varunaa AI" fill="#0EA5A8" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

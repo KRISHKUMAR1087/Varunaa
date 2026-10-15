@@ -1,5 +1,5 @@
 /**
- * PortsPilot AI - Operational Disruption & What-If Simulation Engine
+ * Varunaa AI - Operational Disruption & What-If Simulation Engine
  *
  * Answers: "What happens if I change this operational decision?"
  *

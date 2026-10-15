@@ -74,7 +74,7 @@ export const SettingsPage: React.FC = () => {
       showToast('success', 'AI Settings Saved', `Google Gemini reasoning (${geminiModel}) is now active.`);
     } else {
       localStorage.removeItem('gemini_api_key');
-      showToast('info', 'AI Settings Saved', 'Reverted to PortsPilot local operational intelligence.');
+      showToast('info', 'AI Settings Saved', 'Reverted to Varunaa local operational intelligence.');
     }
   };
 
@@ -342,7 +342,7 @@ export const SettingsPage: React.FC = () => {
                 <span>Change Password</span>
               </div>
               <p className="text-text-muted text-xs">
-                Set a strong password for your PortsPilot administrative console account.
+                Set a strong password for your Varunaa administrative console account.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -391,7 +391,7 @@ export const SettingsPage: React.FC = () => {
                 <span>Delete Account & Revoke Access</span>
               </div>
               <p className="text-rose-900/80 text-xs leading-relaxed">
-                Permanently delete your user profile and remove your credentials from PortsPilot. This action cannot be undone.
+                Permanently delete your user profile and remove your credentials from Varunaa. This action cannot be undone.
               </p>
 
               <button
@@ -518,7 +518,7 @@ export const SettingsPage: React.FC = () => {
                   <h4 className="text-xs font-semibold text-text-main">
                     {geminiApiKey.trim().length > 15 && !geminiApiKey.includes('your-')
                       ? 'Google Gemini 2.0 Connected'
-                      : 'PortsPilot Local Telemetry Engine'}
+                      : 'Varunaa Local Telemetry Engine'}
                   </h4>
                   <p className="text-[11px] text-text-muted">
                     {geminiApiKey.trim().length > 15 && !geminiApiKey.includes('your-')
@@ -610,7 +610,7 @@ export const SettingsPage: React.FC = () => {
                 Interface Theme
               </h3>
               <p className="text-text-muted text-xs">
-                Select your preferred interface color mode across all PortsPilot portals and operational views.
+                Select your preferred interface color mode across all Varunaa portals and operational views.
               </p>
             </div>
 

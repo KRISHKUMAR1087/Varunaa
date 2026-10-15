@@ -194,7 +194,7 @@ export const Topbar: React.FC<TopbarProps> = ({ isCollapsed, setIsMobileMenuOpen
                   {user?.name || 'Capt. M. Vance'}
                 </div>
                 <div className="text-xs text-text-muted truncate mt-0.5">
-                  {user?.email || 'admin@portspilot.demo'}
+                  {user?.email || 'admin@varunaa.demo'}
                 </div>
                 <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />

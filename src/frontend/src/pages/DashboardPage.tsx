@@ -11,8 +11,9 @@ import {
   Ship,
   Anchor,
   Layers,
-  Clock,
   ExternalLink,
+  Search,
+  Navigation,
 } from 'lucide-react';
 import { useOperations } from '../context/OperationsContext';
 import { useAuth } from '../context/AuthContext';
@@ -90,20 +91,34 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Quick action tools */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => navigate('/intelligence/delays')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-xs"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>Delay Lab (90d)</span>
+          </button>
+          <button
+            onClick={() => navigate('/intelligence/voyage-twin')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-colors shadow-xs"
+          >
+            <Navigation className="w-3.5 h-3.5" />
+            <span>Voyage Digital Twin</span>
+          </button>
           <button
             onClick={() => navigate('/decision/simulator')}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-colors shadow-xs"
           >
             <RefreshCw className="w-3.5 h-3.5 text-text-muted" />
             <span>What-If Simulator</span>
           </button>
           <button
-            onClick={() => navigate('/decision/planner')}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-colors shadow-xs"
+            onClick={() => navigate('/decision/verification')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-colors shadow-xs"
           >
-            <Clock className="w-3.5 h-3.5 text-text-muted" />
-            <span>72h Plan</span>
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>10 Scenarios</span>
           </button>
         </div>
       </div>
