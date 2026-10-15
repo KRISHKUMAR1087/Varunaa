@@ -2,6 +2,14 @@
 # HACKATHON SUBMISSION — .gitignore
 # =============================================================================
 # IMPORTANT: Never commit secrets, credentials, or large binary files.
+# ── Local environment files & IDE state ───────────────────────────────────────
+.env.*
+!.env.example
+.vs/
+
+# Backup environment files must never be committed
+*.env.backup
+.env.backup
 
 # ── Secrets & Environment ─────────────────────────────────────────────────────
 .env

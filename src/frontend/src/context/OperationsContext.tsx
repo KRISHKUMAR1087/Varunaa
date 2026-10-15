@@ -90,6 +90,8 @@ interface OperationsContextType {
   resolveAlert: (alertId: string) => void;
   sendCopilotMessage: (query: string) => Promise<void>;
   resetToDefault: () => void;
+  importCsvData: (importedVessels: Vessel[], customBerths?: Berth[]) => void;
+  redistributeYardBlock: (sourceId: string, targetId: string, amountTeu: number) => void;
 
   // Ship Agent Operational Methods
   addVessel: (vesselData: Partial<Vessel>) => Vessel;
@@ -762,14 +764,17 @@ I am monitoring real-time AIS feeds, tidal windows, crane telemetry, and predict
       origin: vesselData.origin || "Singapore (SGSIN)",
       destination: vesselData.destination || "Rotterdam (NLRTM)",
       eta: vesselData.eta || "Tomorrow, 12:00 UTC",
-      etd: vesselData.etd || "+2 Days, 18:00 UTC",
+      etd: vesselData.etd || vesselData.estimatedEtd || "+2 Days, 18:00 UTC (Est.)",
+      estimatedEtd: vesselData.estimatedEtd,
+      isEstimatedEtd: vesselData.isEstimatedEtd ?? (!vesselData.etd || vesselData.etd.includes('(Est.)')),
+      etdRationale: vesselData.etdRationale,
       status: vesselData.status || "Arriving",
       priority: vesselData.priority || "Standard",
       currentBerth: null,
       assignedBerth: vesselData.assignedBerth || "Unassigned",
-      predictedWaitHours: 3.5,
-      demurrageRisk: "Low",
-      historicalTurnaroundHours: 20,
+      predictedWaitHours: Number(vesselData.predictedWaitHours) || 3.5,
+      demurrageRisk: vesselData.demurrageRisk || "Low",
+      historicalTurnaroundHours: Number(vesselData.historicalTurnaroundHours) || 20,
       recommendedAction: "Awaiting port berth assignment and pilot scheduling.",
       ownerId: vesselData.ownerId || user?.id || "demo-agent",
       shippingCompany: vesselData.shippingCompany || "Apex Maritime Agency",
@@ -1215,6 +1220,57 @@ I am monitoring real-time AIS feeds, tidal windows, crane telemetry, and predict
     }
   };
 
+  const importCsvData = (importedVessels: Vessel[], customBerths?: Berth[]) => {
+    setVessels(importedVessels);
+    if (customBerths && customBerths.length > 0) {
+      setBerths(customBerths);
+    }
+    showToast(
+      "success",
+      "Operational Data Ingested",
+      `Successfully loaded ${importedVessels.length} vessel records into active telemetry.`
+    );
+  };
+
+  const redistributeYardBlock = (sourceId: string, targetId: string, amountTeu: number) => {
+    setYardBlocks((prev) =>
+      prev.map((block) => {
+        if (block.id === sourceId) {
+          const newOccupied = Math.max(0, block.occupiedTeu - amountTeu);
+          const newUtil = Math.round((newOccupied / block.totalTeu) * 100);
+          return {
+            ...block,
+            occupiedTeu: newOccupied,
+            utilizationPercent: newUtil,
+            congestionRisk:
+              newUtil >= 85 ? "High" : newUtil >= 70 ? "Moderate" : "Normal",
+            suggestedRedistribution: undefined,
+          };
+        }
+        if (block.id === targetId) {
+          const newOccupied = Math.min(
+            block.totalTeu,
+            block.occupiedTeu + amountTeu
+          );
+          const newUtil = Math.round((newOccupied / block.totalTeu) * 100);
+          return {
+            ...block,
+            occupiedTeu: newOccupied,
+            utilizationPercent: newUtil,
+            congestionRisk:
+              newUtil >= 85 ? "High" : newUtil >= 70 ? "Moderate" : "Normal",
+          };
+        }
+        return block;
+      })
+    );
+    showToast(
+      "success",
+      "Yard Transfer Dispatched",
+      `Transferred ${amountTeu.toLocaleString()} TEU from ${sourceId} to ${targetId}. Density balanced.`
+    );
+  };
+
   const contextValue = useMemo(
     () => ({
       vessels,
@@ -1247,6 +1303,8 @@ I am monitoring real-time AIS feeds, tidal windows, crane telemetry, and predict
       resolveAlert,
       sendCopilotMessage,
       resetToDefault,
+      importCsvData,
+      redistributeYardBlock,
       addVessel,
       updateVessel,
       deleteVessel,

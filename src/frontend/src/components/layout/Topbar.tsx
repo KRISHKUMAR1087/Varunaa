@@ -9,12 +9,14 @@ import {
   Settings as SettingsIcon,
   ShieldCheck,
   User as UserIcon,
+  Database,
 } from 'lucide-react';
 import { useOperations } from '../../context/OperationsContext';
 import { useAuth } from '../../context/AuthContext';
 import { MusicButton } from '../common/MusicButton';
 import { ThemeToggleButton } from '../common/ThemeToggleButton';
 import { TimezoneClock } from '../common/TimezoneClock';
+import { CsvImportModal } from '../operations/CsvImportModal';
 
 interface TopbarProps {
   isCollapsed: boolean;
@@ -26,6 +28,7 @@ export const Topbar: React.FC<TopbarProps> = ({ isCollapsed, setIsMobileMenuOpen
   const { user, logout } = useAuth();
   const { alerts, setIsCopilotOpen, isCopilotOpen, searchQuery, setSearchQuery } = useOperations();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState<boolean>(false);
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -119,6 +122,16 @@ export const Topbar: React.FC<TopbarProps> = ({ isCollapsed, setIsMobileMenuOpen
           {unreadAlerts > 0 && (
             <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-white shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
           )}
+        </button>
+
+        {/* CSV Ingestion Button */}
+        <button
+          onClick={() => setIsCsvModalOpen(true)}
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-text-main bg-surface-subtle hover:bg-surface border border-border-subtle hover:border-brand-teal/50 transition-all cursor-pointer shadow-xs"
+          title="Import Operations CSV"
+        >
+          <Database className="w-3.5 h-3.5 text-brand-teal" />
+          <span>Import CSV</span>
         </button>
 
         {/* Ambient Background Music Toggle */}
@@ -223,6 +236,12 @@ export const Topbar: React.FC<TopbarProps> = ({ isCollapsed, setIsMobileMenuOpen
           )}
         </div>
       </div>
+
+      {/* CSV Ingestion Modal */}
+      <CsvImportModal
+        isOpen={isCsvModalOpen}
+        onClose={() => setIsCsvModalOpen(false)}
+      />
     </header>
   );
 };

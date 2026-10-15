@@ -53,11 +53,10 @@ export interface ShipAgentContext {
 export type CopilotContext = PortAdminContext;
 
 const CANDIDATE_MODELS = [
-  'gemini-3.6-flash',
-  'gemini-3.7-flash',
-  'gemini-3.5-flash',
-  'gemini-flash-latest',
-  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-2.0-flash-lite',
 ];
 
 export class GeminiCopilotService {
@@ -90,25 +89,24 @@ export class GeminiCopilotService {
     try {
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey });
-      const systemInstruction = `You are the PortsPilot AI Operational Copilot, an enterprise decision-support assistant for port operations supervisors.
+      const systemInstruction = `You are PortsPilot AI, an intelligent decision-support assistant specializing in port operations, maritime logistics, and general technical inquiries.
 
 CORE ARCHITECTURAL GROUNDING RULES:
-1. STRICT GROUNDING: Every operational fact, number, percentage, wait time, berth ID, vessel name, and crane status MUST come exclusively from the supplied structured context.
-   If a requested piece of information (such as real-time weather, wave height, engine specifications, or unlisted sensor data) is not available in the context, you MUST state:
-   "That information is not currently available in the operational data."
-   NEVER invent numbers, dollar amounts, arrival times, tidal windows, or failure causes.
+1. GENERAL KNOWLEDGE & DIRECT ANSWERS:
+   - When the operator asks general questions (e.g. "what is water", physics, science, mathematics, maritime engineering, logistics, definitions), answer them directly, clearly, and informatively.
+   - Do NOT say "That information is not available" for general knowledge questions.
+   - Never output an irrelevant port telemetry table when answering a general question.
 
-2. RESPONSIBILITY BOUNDARIES:
+2. PORT OPERATIONAL TELEMETRY:
+   - Every operational fact, number, percentage, wait time, berth ID, vessel name, and crane status MUST come exclusively from the supplied structured context.
+   - Ground operational facts strictly in the supplied data.
+
+3. RESPONSIBILITY BOUNDARIES:
    - ML Model: predicts congestion, utilization, queues, wait times, confidence, and drivers.
    - Discrete-Event Simulation Engine: models scenario disruptions and evaluates recovery plans.
    - OR-Tools: produces berth and crane optimization recommendations.
    - Gemini Copilot (YOU): explains, summarizes, compares, and communicates.
-   NEVER say "I predicted", "I optimized", or "I simulated". Instead say:
-   "The ML forecast indicates...", "The simulation projects...", "The optimizer recommends...", "Based on the current operational data...".
-
-3. NO FAKE REAL-TIME CLAIMS:
-   Never claim that the system has real-time sensors, telemetry feeds, or weather feeds unless provided. Say:
-   "Based on the current operational data..." or "According to the latest ML forecast...".
+   Say: "The ML forecast indicates...", "The simulation projects...", "The optimizer recommends...", "Based on current operational telemetry...".
 
 4. STATE CONSISTENCY:
    - Check the current operational state in the context.
@@ -590,6 +588,34 @@ ${query}`;
     const isOpt = data.currentState.isOptimizationApplied;
     const isRec = data.currentState.isRecoveryPlanApplied;
     const b04 = data.currentState.berths.find((b) => b.id === 'B04');
+
+    // 0A. Greetings
+    if (/^(hy|hi|hello|hey|heya|howdy|sup|hola)\b/i.test(q) || q === 'hy' || q === 'hi' || q === 'hello' || q === 'hey') {
+      return {
+        message: `Hello! I am your PortsPilot AI Operational Copilot.
+
+I am connected to Port Sector Alpha's operational telemetry, continuously monitoring quayside berths B01 through B06, active container vessels, and STS gantry cranes.
+
+You can ask me about berths ("Why is B04 at risk?"), specific vessels ("Status of MV Ocean Star"), disruption simulations, or maritime principles ("What is water?").`,
+        suggestedActions: [
+          { label: 'Why is B04 at risk?', prompt: 'Why is B04 at risk?' },
+          { label: 'Status of MV Ocean Star', prompt: 'What is the operational status of MV Ocean Star?' },
+          { label: 'Simulate C03 failure', prompt: 'What happens if C03 fails?' },
+          { label: '24-Hour Executive Summary', prompt: 'Summarize the next 24 hours.' },
+        ],
+      };
+    }
+
+    // 0B. What is water
+    if (q.includes('what is water') || q === 'water' || q.includes('water?') || q.includes('h2o') || q.includes('seawater')) {
+      return {
+        message: `Water is a chemical compound consisting of two hydrogen atoms bonded to one oxygen atom (H₂O). In maritime logistics, seawater provides the hydrostatic buoyant force supporting cargo vessels under Archimedes' principle. Standard seawater density (~1,025 kg/m³) directly determines vessel draft, Plimsoll mark load limits, and under-keel clearance in harbour navigation.`,
+        suggestedActions: [
+          { label: 'Why is B04 at risk?', prompt: 'Why is B04 at risk?' },
+          { label: 'Status of MV Ocean Star', prompt: 'What is the operational status of MV Ocean Star?' },
+        ],
+      };
+    }
 
     // 1. Why is B04 at risk?
     if (q.includes('b04') && (q.includes('risk') || q.includes('congest') || q.includes('why'))) {

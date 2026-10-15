@@ -189,8 +189,19 @@ export const ShippingVesselsPage: React.FC = () => {
 
                       {/* ETD */}
                       <td className="py-3.5 px-3">
-                        <div className="text-text-muted">{vessel.etd}</div>
-                        <div className="text-[10px] text-text-caption">{vessel.destination}</div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-text-muted">{vessel.etd}</span>
+                          {vessel.isEstimatedEtd || (vessel.etd && vessel.etd.includes('(Est.)')) ? (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-sky-50 text-sky-800 border border-sky-200">
+                              Est.
+                            </span>
+                          ) : (
+                            <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              Actual
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-text-caption mt-0.5">{vessel.destination}</div>
                       </td>
 
                       {/* Status */}

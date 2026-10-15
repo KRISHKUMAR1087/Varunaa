@@ -108,7 +108,18 @@ export const ShippingSchedulesPage: React.FC = () => {
 
                 <div>
                   <span className="text-[10px] text-text-muted uppercase font-semibold">Estimated Departure (ETD)</span>
-                  <div className="font-medium text-text-main mt-1">{v.etd}</div>
+                  <div className="font-medium text-text-main mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span>{v.etd}</span>
+                    {v.isEstimatedEtd || (v.etd && v.etd.includes('(Est.)')) ? (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-sky-50 text-sky-800 border border-sky-200" title={v.etdRationale || "Calculated by system"}>
+                        Est.
+                      </span>
+                    ) : (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        Actual
+                      </span>
+                    )}
+                  </div>
                   <div className="text-[10px] text-text-caption mt-0.5">Unmooring Target</div>
                 </div>
 

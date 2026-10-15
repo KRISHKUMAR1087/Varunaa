@@ -15,7 +15,7 @@ import { RouteMapGraphic } from '../components/operations/RouteMapGraphic';
 import { RiskBadge } from '../components/common/RiskBadge';
 
 export const RoutesPage: React.FC = () => {
-  const { routes, setIsCopilotOpen, sendCopilotMessage } = useOperations();
+  const { routes, setIsCopilotOpen, sendCopilotMessage, showToast, updateVessel, vessels } = useOperations();
   const [selectedPortCode, setSelectedPortCode] = useState<string>('PORT-B');
 
   const selectedPort = routes.find(r => r.portCode === selectedPortCode) || routes[1];
@@ -24,6 +24,22 @@ export const RoutesPage: React.FC = () => {
     setIsCopilotOpen(true);
     await sendCopilotMessage(
       `Compare alternate routing economics between Rotterdam and ${selectedPort.portName}. Provide a commercial briefing with bunker fuel costs and demurrage exposure.`
+    );
+  };
+
+  const handleExecuteDiversion = () => {
+    const flagship = vessels[0];
+    if (flagship) {
+      updateVessel(flagship.id, {
+        destination: selectedPort.portName,
+        recommendedAction: `Diverted to ${selectedPort.portName} (${selectedPort.portCode}) to bypass quayside bottleneck.`,
+        predictedWaitHours: Math.max(1.0, selectedPort.delayHours),
+      });
+    }
+    showToast(
+      'success',
+      'Offshore Diversion Dispatched',
+      `Voyage route amended to ${selectedPort.portName}. Estimated savings: ${selectedPort.delayHours < 15 ? '$148,000 USD demurrage' : 'avoided port gridlock'}.`
     );
   };
 
@@ -235,13 +251,22 @@ export const RoutesPage: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={handleAskGemini}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-all shadow-md shadow-teal-500/20 shrink-0 cursor-pointer active:scale-95"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Draft Advisory with Gemini</span>
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={handleExecuteDiversion}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20 shrink-0 cursor-pointer active:scale-95"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Dispatch Diversion Order</span>
+          </button>
+          <button
+            onClick={handleAskGemini}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-all shadow-md shadow-teal-500/20 shrink-0 cursor-pointer active:scale-95"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Draft Advisory with Gemini</span>
+          </button>
+        </div>
       </div>
     </div>
   );
