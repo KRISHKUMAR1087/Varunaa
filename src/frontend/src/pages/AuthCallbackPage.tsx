@@ -218,7 +218,7 @@ export const AuthCallbackPage: React.FC = () => {
             </div>
 
             <span className="text-xl font-bold tracking-tight text-text-main">
-              PortsPilot
+              Varunaa
             </span>
           </div>
 

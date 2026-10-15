@@ -431,7 +431,7 @@ export const OperationsProvider: React.FC<{ children: React.ReactNode }> = ({
     {
       id: "init-1",
       sender: "gemini",
-      text: `Good day, Supervisor. I am your **PortsPilot Copilot**. 
+      text: `Good day, Supervisor. I am your **Varunaa Copilot**. 
 
 I am monitoring real-time AIS feeds, tidal windows, crane telemetry, and predictive bottlenecks across all 6 berths. 
 

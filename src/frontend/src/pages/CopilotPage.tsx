@@ -14,7 +14,7 @@ export const CopilotPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-text-main tracking-tight">
-              PortsPilot Copilot
+              Varunaa Copilot
             </h1>
             <span className="px-2 py-0.5 rounded text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200 flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-brand-teal" />

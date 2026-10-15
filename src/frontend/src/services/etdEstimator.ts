@@ -1,5 +1,5 @@
 /**
- * PortsPilot AI - ETD Estimation & Turnaround Service
+ * Varunaa AI - ETD Estimation & Turnaround Service
  *
  * Resolves the operational contradiction where users were previously forced
  * to supply a future departure time (ETD) before port berthing.

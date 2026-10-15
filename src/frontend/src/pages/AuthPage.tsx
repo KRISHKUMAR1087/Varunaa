@@ -159,7 +159,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ mode }) => {
           <div className="w-9 h-9 rounded-xl bg-brand-teal flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.04)] group-hover:scale-105 transition-transform duration-200">
             <Ship className="w-4 h-4 text-white" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-text-main group-hover:text-brand-teal transition-colors">PortsPilot</span>
+          <span className="text-xl font-bold tracking-tight text-text-main group-hover:text-brand-teal transition-colors">Varunaa</span>
         </Link>
         <div className="flex items-center gap-3">
           <MusicButton />

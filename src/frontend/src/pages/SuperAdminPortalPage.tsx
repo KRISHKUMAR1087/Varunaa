@@ -103,7 +103,7 @@ export const SuperAdminPortalPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-lg leading-tight tracking-tight text-white">PortsPilot</h1>
+                <h1 className="font-bold text-lg leading-tight tracking-tight text-white">Varunaa</h1>
                 <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase tracking-widest">
                   GLOBAL SUPER ADMIN
                 </span>

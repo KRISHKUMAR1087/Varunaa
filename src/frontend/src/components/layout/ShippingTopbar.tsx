@@ -131,7 +131,7 @@ export const ShippingTopbar: React.FC<ShippingTopbarProps> = ({
                   {user?.name || 'Shipping Agent'}
                 </div>
                 <div className="text-[11px] text-text-muted truncate mt-0.5">
-                  {user?.email || 'agent@portspilot.demo'}
+                  {user?.email || 'agent@varunaa.demo'}
                 </div>
                 <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-50 text-sky-800 border border-sky-200">
                   <Ship className="w-3 h-3 text-sky-600" />

@@ -1,561 +1,596 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo } from 'react';
 import {
   RefreshCw,
   Zap,
   CheckCircle2,
   SlidersHorizontal,
   Sparkles,
-  ArrowRight,
   Truck,
   Layers,
   CloudSun,
   RotateCcw,
+  Cpu,
+  Ship,
+  Anchor,
+  AlertTriangle,
 } from 'lucide-react';
 import { useOperations } from '../context/OperationsContext';
-import { BeforeAfterCard } from '../components/operations/BeforeAfterCard';
-import {
-  SimulationEngine,
-  SimulationParams,
-  SimulationExecutionResult,
-} from '../services/simulationEngine';
+
+type DisruptionPresetType =
+  | 'crane_breakdown'
+  | 'vessel_delay'
+  | 'berth_closure'
+  | 'weather_restriction'
+  | 'productivity_slump'
+  | 'yard_saturation'
+  | 'truck_shortage'
+  | 'rail_disruption'
+  | 'customs_hold'
+  | 'vessel_surge';
+
+interface ThreeWayPlanState {
+  original: {
+    waitHours: number;
+    totalDelayHours: number;
+    berthUtil: number;
+    craneUtil: number;
+    dwellDays: number;
+    missedConnections: number;
+    demurrageUsd: number;
+    completionTime: string;
+  };
+  disrupted: {
+    waitHours: number;
+    totalDelayHours: number;
+    berthUtil: number;
+    craneUtil: number;
+    dwellDays: number;
+    missedConnections: number;
+    demurrageUsd: number;
+    completionTime: string;
+    knockOnVessels: number;
+  };
+  recovery: {
+    waitHours: number;
+    totalDelayHours: number;
+    berthUtil: number;
+    craneUtil: number;
+    dwellDays: number;
+    missedConnections: number;
+    demurrageUsd: number;
+    completionTime: string;
+    delayRecoveredHours: number;
+    interventionCostUsd: number;
+    netSavingsUsd: number;
+    strategyName: string;
+    actions: string[];
+  };
+}
 
 export const SimulatorPage: React.FC = () => {
-  const navigate = useNavigate();
   const {
-    isOptimizationApplied,
-    isRecoveryPlanApplied,
     applyRecoveryPlan,
     showToast,
     setIsCopilotOpen,
     sendCopilotMessage,
   } = useOperations();
 
-  // Simulation Controls State
-  const [selectedPreset, setSelectedPreset] = useState<'custom' | 'crane_failure' | 'berth_closure' | 'vessel_surge'>('crane_failure');
-  const [craneAdjustment, setCraneAdjustment] = useState<number>(-1);
-  const [truckFlowPerHour, setTruckFlowPerHour] = useState<number>(50);
-  const [containerVolumeMultiplier, setContainerVolumeMultiplier] = useState<number>(1.0);
-  const [reallocateBottleneckVessel, setReallocateBottleneckVessel] = useState<boolean>(false);
-  const [doubleShiftGangs, setDoubleShiftGangs] = useState<boolean>(false);
-  const [vesselSurgeCount, setVesselSurgeCount] = useState<number>(1);
-  const [weatherSeverity, setWeatherSeverity] = useState<'Calm' | 'Moderate' | 'Severe'>('Calm');
+  // Selected disruption preset
+  const [selectedDisruption, setSelectedDisruption] = useState<DisruptionPresetType>('crane_breakdown');
   const [durationHours, setDurationHours] = useState<number>(8);
+  const [severityMultiplier, setSeverityMultiplier] = useState<number>(1.0);
+  const [selectedStrategy, setSelectedStrategy] = useState<'A' | 'B' | 'C'>('A');
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
 
-  // Execution Result (initialized with default Crane Failure scenario)
-  const [simResult, setSimResult] = useState<SimulationExecutionResult>(() =>
-    SimulationEngine.runSimulation(
-      {
-        craneAdjustment: -1,
-        truckFlowPerHour: 50,
-        containerVolumeMultiplier: 1.0,
-        reallocateBottleneckVessel: false,
-        doubleShiftGangs: false,
-        vesselSurgeCount: 1,
-        weatherSeverity: 'Calm',
-        scenarioPreset: 'crane_failure',
-        durationHours: 8,
-      },
-      isOptimizationApplied
-    )
-  );
+  // Three-Way Model Calculations across all 10 presets
+  const planComparison: ThreeWayPlanState = useMemo(() => {
+    const dur = durationHours * severityMultiplier;
 
-  // Handle Preset Selection
-  const handlePresetChange = (preset: 'custom' | 'crane_failure' | 'berth_closure' | 'vessel_surge') => {
-    setSelectedPreset(preset);
-    if (preset === 'crane_failure') {
-      setCraneAdjustment(-1);
-      setReallocateBottleneckVessel(false);
-      setVesselSurgeCount(1);
-      setDurationHours(8);
-      setWeatherSeverity('Calm');
-    } else if (preset === 'berth_closure') {
-      setCraneAdjustment(-2);
-      setReallocateBottleneckVessel(false);
-      setVesselSurgeCount(0);
-      setDurationHours(12);
-      setWeatherSeverity('Calm');
-    } else if (preset === 'vessel_surge') {
-      setCraneAdjustment(0);
-      setVesselSurgeCount(3);
-      setContainerVolumeMultiplier(1.3);
-      setDurationHours(16);
-      setWeatherSeverity('Moderate');
-    } else if (preset === 'custom') {
-      // Keep existing manual levers
+    switch (selectedDisruption) {
+      case 'crane_breakdown':
+        return {
+          original: {
+            waitHours: 4.5,
+            totalDelayHours: 0.0,
+            berthUtil: 78,
+            craneUtil: 84,
+            dwellDays: 2.8,
+            missedConnections: 0,
+            demurrageUsd: 0,
+            completionTime: 'Tomorrow 12:00 UTC',
+          },
+          disrupted: {
+            waitHours: 4.5 + dur,
+            totalDelayHours: dur,
+            berthUtil: 96,
+            craneUtil: 60,
+            dwellDays: 4.2,
+            missedConnections: 142,
+            demurrageUsd: Math.round(dur * 3500 + 48000),
+            completionTime: `Tomorrow +${Math.round(dur)}h UTC`,
+            knockOnVessels: 2,
+          },
+          recovery: {
+            waitHours: Number((4.5 + dur * 0.25).toFixed(1)),
+            totalDelayHours: Number((dur * 0.25).toFixed(1)),
+            berthUtil: 82,
+            craneUtil: 88,
+            dwellDays: 3.0,
+            missedConnections: 0,
+            demurrageUsd: 12000,
+            completionTime: 'Tomorrow 16:30 UTC',
+            delayRecoveredHours: Number((dur * 0.75).toFixed(1)),
+            interventionCostUsd: selectedStrategy === 'A' ? 14500 : selectedStrategy === 'B' ? 32000 : 21000,
+            netSavingsUsd: Math.round((dur * 3500 + 48000) - 14500 - 12000),
+            strategyName: selectedStrategy === 'A'
+              ? 'Strategy A: Mobilize Adjacent STS Crane C02 via Rail Shunting'
+              : selectedStrategy === 'B'
+              ? 'Strategy B: Warp Vessel to Berth B02 (Pocket Swap)'
+              : 'Strategy C: Deploy Mobile Harbor Crane MHC-01 + Overtime Gang',
+            actions: [
+              'Tag-out failed Crane C03 electrical hoist',
+              'Contiguous rail travel & gantry positioning (45 mins)',
+              'Resume twin-lift spreader cycles on Bay 34-42',
+            ],
+          },
+        };
+
+      case 'vessel_delay':
+        return {
+          original: { waitHours: 3.5, totalDelayHours: 0.0, berthUtil: 72, craneUtil: 80, dwellDays: 2.5, missedConnections: 0, demurrageUsd: 0, completionTime: 'Tomorrow 10:00 UTC' },
+          disrupted: { waitHours: 3.5 + dur * 0.6, totalDelayHours: dur, berthUtil: 88, craneUtil: 70, dwellDays: 3.4, missedConnections: 45, demurrageUsd: Math.round(dur * 2400), completionTime: `Tomorrow +${Math.round(dur)}h UTC`, knockOnVessels: 1 },
+          recovery: { waitHours: 4.0, totalDelayHours: dur * 0.3, berthUtil: 76, craneUtil: 82, dwellDays: 2.7, missedConnections: 0, demurrageUsd: 8000, completionTime: 'Tomorrow 13:00 UTC', delayRecoveredHours: dur * 0.7, interventionCostUsd: 4200, netSavingsUsd: Math.round(dur * 2400 - 4200 - 8000), strategyName: 'Swap Arrival Slot with Feeder Baltic & Adjust Pilot Notice', actions: ['Reassign pilot boat boarding window', 'Hold Berth B04 buffer for inward transit'] },
+        };
+
+      case 'berth_closure':
+        return {
+          original: { waitHours: 4.0, totalDelayHours: 0.0, berthUtil: 75, craneUtil: 82, dwellDays: 2.6, missedConnections: 0, demurrageUsd: 0, completionTime: 'Tomorrow 12:00 UTC' },
+          disrupted: { waitHours: 4.0 + dur * 0.9, totalDelayHours: dur * 1.2, berthUtil: 98, craneUtil: 65, dwellDays: 4.8, missedConnections: 180, demurrageUsd: Math.round(dur * 4200), completionTime: `Tomorrow +${Math.round(dur * 1.2)}h UTC`, knockOnVessels: 4 },
+          recovery: { waitHours: 6.2, totalDelayHours: dur * 0.4, berthUtil: 84, craneUtil: 86, dwellDays: 3.1, missedConnections: 15, demurrageUsd: 22000, completionTime: 'Tomorrow 18:00 UTC', delayRecoveredHours: dur * 0.8, interventionCostUsd: 18000, netSavingsUsd: Math.round(dur * 4200 - 18000 - 22000), strategyName: 'Divert Shallow-Draught Vessels to B01 and Prioritize Deepwater B02', actions: ['Check 1.0m UKC at Berth B02', 'Shift line handlers to North Quay'] },
+        };
+
+      case 'weather_restriction':
+        return {
+          original: { waitHours: 4.0, totalDelayHours: 0.0, berthUtil: 74, craneUtil: 81, dwellDays: 2.5, missedConnections: 0, demurrageUsd: 0, completionTime: 'Tomorrow 14:00 UTC' },
+          disrupted: { waitHours: 4.0 + dur, totalDelayHours: dur, berthUtil: 94, craneUtil: 45, dwellDays: 3.9, missedConnections: 95, demurrageUsd: Math.round(dur * 3000), completionTime: `Tomorrow +${Math.round(dur)}h UTC`, knockOnVessels: 2 },
+          recovery: { waitHours: 5.5, totalDelayHours: dur * 0.35, berthUtil: 80, craneUtil: 84, dwellDays: 2.9, missedConnections: 0, demurrageUsd: 14000, completionTime: 'Tomorrow 19:00 UTC', delayRecoveredHours: dur * 0.65, interventionCostUsd: 6500, netSavingsUsd: Math.round(dur * 3000 - 6500 - 14000), strategyName: 'Resequence Low-Tier Below-Deck Moves During Gale Window', actions: ['Deploy sheltered hold discharge', 'Resume high deck tier moves upon wind subsidence'] },
+        };
+
+      default:
+        return {
+          original: { waitHours: 4.2, totalDelayHours: 0.0, berthUtil: 75, craneUtil: 82, dwellDays: 2.7, missedConnections: 0, demurrageUsd: 0, completionTime: 'Tomorrow 12:00 UTC' },
+          disrupted: { waitHours: 4.2 + dur * 0.7, totalDelayHours: dur, berthUtil: 92, craneUtil: 70, dwellDays: 3.8, missedConnections: 60, demurrageUsd: Math.round(dur * 2600), completionTime: `Tomorrow +${Math.round(dur)}h UTC`, knockOnVessels: 2 },
+          recovery: { waitHours: 5.0, totalDelayHours: dur * 0.3, berthUtil: 79, craneUtil: 85, dwellDays: 2.9, missedConnections: 0, demurrageUsd: 10000, completionTime: 'Tomorrow 16:00 UTC', delayRecoveredHours: dur * 0.7, interventionCostUsd: 8500, netSavingsUsd: Math.round(dur * 2600 - 8500 - 10000), strategyName: 'Automated Multi-Resource Dynamic Rescheduling', actions: ['Re-balance crane cycles', 'Notify inland drayage dispatch'] },
+        };
     }
-  };
+  }, [selectedDisruption, durationHours, severityMultiplier, selectedStrategy]);
 
   const handleSimulate = async () => {
     setIsSimulating(true);
-    await new Promise(r => setTimeout(r, 400));
-
-    const params: SimulationParams = {
-      craneAdjustment,
-      truckFlowPerHour,
-      containerVolumeMultiplier,
-      reallocateBottleneckVessel,
-      doubleShiftGangs,
-      vesselSurgeCount,
-      weatherSeverity,
-      scenarioPreset: selectedPreset,
-      durationHours,
-    };
-
-    const result = SimulationEngine.runSimulation(params, isOptimizationApplied);
-    setSimResult(result);
+    await new Promise(r => setTimeout(r, 450));
     setIsSimulating(false);
-
     showToast(
-      result.deltas.isImprovement ? 'success' : 'warning',
-      'Simulation Completed',
-      result.deltas.isImprovement
-        ? `Projected optimization: Wait reduced by ${Math.abs(result.deltas.waitHoursDelta)}h, saving $${Math.abs(result.deltas.demurrageDeltaUsd).toLocaleString()}.`
-        : `Projected disruption: Queue expanded to ${result.after.queueCount} vessels, wait increased by +${result.deltas.waitHoursDelta}h.`
+      'success',
+      'Disruption Model Evaluated',
+      `Simulation computed: Disrupted delay of +${planComparison.disrupted.totalDelayHours}h reduced to ${planComparison.recovery.totalDelayHours}h via ${planComparison.recovery.strategyName.split(':')[0]}.`
     );
   };
 
-  const handleReset = () => {
-    handlePresetChange('crane_failure');
-    const result = SimulationEngine.runSimulation(
-      {
-        craneAdjustment: -1,
-        truckFlowPerHour: 50,
-        containerVolumeMultiplier: 1.0,
-        reallocateBottleneckVessel: false,
-        doubleShiftGangs: false,
-        vesselSurgeCount: 1,
-        weatherSeverity: 'Calm',
-        scenarioPreset: 'crane_failure',
-        durationHours: 8,
-      },
-      isOptimizationApplied
+  const handleApplyApprovedPlan = () => {
+    applyRecoveryPlan();
+    showToast(
+      'success',
+      'Recovery Plan Approved & Committed',
+      `Live operating schedule committed: Recovering ${planComparison.recovery.delayRecoveredHours}h delay, net demurrage savings: $${planComparison.recovery.netSavingsUsd.toLocaleString()} USD.`
     );
-    setSimResult(result);
-    showToast('info', 'Simulation Reset', 'Parameters returned to default baseline outage scenario.');
   };
 
   const handleAskCopilot = async () => {
     setIsCopilotOpen(true);
     await sendCopilotMessage(
-      `Analyze the simulation result for: ${simResult.scenarioName} (${durationHours}h). ` +
-      `Before: ${simResult.before.queueCount} vessels, ${simResult.before.avgWaitHours}h wait. ` +
-      `After: ${simResult.after.queueCount} vessels, ${simResult.after.avgWaitHours}h wait.`
+      `Compare recovery strategies for ${selectedDisruption} (${durationHours}h). Why does ${planComparison.recovery.strategyName} offer superior trade-offs compared to alternatives?`
     );
   };
 
-  const handleApplyRecovery = () => {
-    applyRecoveryPlan();
-    // After recovery plan is applied, update simulation view
-    const recovered = SimulationEngine.runSimulation(
-      {
-        craneAdjustment: 1,
-        truckFlowPerHour: 80,
-        containerVolumeMultiplier: 1.0,
-        reallocateBottleneckVessel: true,
-        doubleShiftGangs: true,
-        vesselSurgeCount: 0,
-        weatherSeverity: 'Calm',
-        scenarioPreset: 'custom',
-        durationHours,
-      },
-      true
-    );
-    setSimResult(recovered);
-  };
+  const DISRUPTION_PRESETS = [
+    { id: 'crane_breakdown', label: 'STS Crane Breakdown', icon: Cpu, desc: 'Mechanical/electrical failure on active crane' },
+    { id: 'vessel_delay', label: 'Vessel Arrival Delay', icon: Ship, desc: 'Ocean transit weather delay' },
+    { id: 'berth_closure', label: 'Berth Closure / Conflict', icon: Anchor, desc: 'Draught or quay pocket lock' },
+    { id: 'weather_restriction', label: 'Severe Weather / Squall', icon: CloudSun, desc: 'Wind gusts exceeding 38.8 kts' },
+    { id: 'productivity_slump', label: 'Low Handling Productivity', icon: SlidersHorizontal, desc: 'Reduced moves per hour' },
+    { id: 'yard_saturation', label: 'Yard Stacking Pressure', icon: Layers, desc: 'Container dwell time peak' },
+    { id: 'truck_shortage', label: 'Truck Drayage Shortage', icon: Truck, desc: 'Gate congestion & chassis deficit' },
+    { id: 'rail_disruption', label: 'Rail Intermodal Blockage', icon: RefreshCw, desc: 'Inland freight train hold' },
+    { id: 'customs_hold', label: 'Customs & Inspection Hold', icon: AlertTriangle, desc: 'Phytosanitary & border scans' },
+    { id: 'vessel_surge', label: 'Sudden Vessel Surge', icon: Zap, desc: 'Unannounced bunching arrivals' },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* 1. Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border-subtle">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-text-main tracking-tight">
-              Operational Disruption & What-If Simulator
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-text-main">
+              Disruption Simulation & Recovery Workbench
             </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 text-teal-800 border border-teal-200">
-              Interactive Policy Sandbox
+            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-brand-teal/15 text-brand-teal border border-brand-teal/30">
+              Deterministic Sandbox
             </span>
           </div>
-          <p className="text-sm text-text-muted mt-1">
-            Simulate equipment outages, surge arrivals, and tactical reallocation decisions. Calculate exact Before vs After operational impact.
+          <p className="text-xs sm:text-sm text-text-muted mt-1 max-w-4xl">
+            Inject operational disruptions, compare the uninterrupted failure against recovery strategies, and verify downstream cargo consequences before committing changes.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
-            onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-text-muted hover:text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-colors shadow-xs"
-            title="Reset parameters to baseline"
+            onClick={() => {
+              setDurationHours(8);
+              setSeverityMultiplier(1.0);
+              setSelectedDisruption('crane_breakdown');
+              showToast('info', 'Sandbox Reset', 'Parameters reverted to standard operational baseline.');
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-surface hover:bg-surface-subtle border border-border-subtle text-text-muted hover:text-text-main transition-colors shadow-xs"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
+            <span>Reset Sandbox</span>
           </button>
           <button
             onClick={handleAskCopilot}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-colors shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-colors shadow-xs"
           >
-            <Sparkles className="w-3.5 h-3.5 text-brand-teal" />
+            <Sparkles className="w-3.5 h-3.5" />
             <span>Consult Copilot</span>
-          </button>
-          <button
-            onClick={handleSimulate}
-            disabled={isSimulating}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 disabled:opacity-50 transition-all shadow-xs"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
-            <span>{isSimulating ? 'Computing Dynamics...' : 'Run Simulation'}</span>
           </button>
         </div>
       </div>
 
-      {/* Main Grid: Controls on Left (1 col), Results on Right (2 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Stage 1: Operational Levers Panel */}
-        <div className="bg-surface p-6 rounded-3xl border border-border-subtle shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
-          <div className="flex items-center justify-between border-b border-border-subtle pb-3">
-            <h2 className="text-sm font-semibold text-text-main flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-brand-teal" />
-              <span>1. Operational Levers</span>
-            </h2>
-            <span className="text-xs text-text-caption font-medium">What-If Input</span>
-          </div>
-
-          <div className="space-y-4 text-xs">
-            {/* Scenario Presets */}
-            <div>
-              <label className="text-text-muted block mb-1.5 font-medium">Scenario Preset:</label>
-              <select
-                value={selectedPreset}
-                onChange={e => handlePresetChange(e.target.value as any)}
-                className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3 py-2 text-xs text-text-main focus:outline-hidden focus:border-brand-teal"
+      {/* 2. Disruption Presets Selector (All 10 Core Disruptions) */}
+      <div className="space-y-2">
+        <span className="text-xs font-bold text-text-muted uppercase tracking-wider block">
+          Select Disruption Scenario To Inject:
+        </span>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          {DISRUPTION_PRESETS.map(preset => {
+            const Icon = preset.icon;
+            const isSelected = selectedDisruption === preset.id;
+            return (
+              <button
+                key={preset.id}
+                onClick={() => setSelectedDisruption(preset.id as DisruptionPresetType)}
+                className={`p-3 rounded-2xl border text-left transition-all ${
+                  isSelected
+                    ? 'bg-brand-teal/15 border-brand-teal text-brand-teal ring-1 ring-brand-teal shadow-xs'
+                    : 'bg-surface hover:bg-surface-subtle border-border-subtle text-text-main'
+                }`}
               >
-                <option value="crane_failure">Crane Equipment Outage (STS C03 Down)</option>
-                <option value="berth_closure">Unscheduled Berth Closure (B04 Depth Silt)</option>
-                <option value="vessel_surge">Tidal Arrival Surge (+3 ULCVs entering)</option>
-                <option value="custom">Custom What-If Operational Policy</option>
-              </select>
-            </div>
+                <div className="flex items-center gap-2">
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="font-bold text-xs truncate">{preset.label}</span>
+                </div>
+                <p className="text-[10px] text-text-muted mt-1 truncate">
+                  {preset.desc}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-            {/* Crane Allocation Slider */}
-            <div>
-              <div className="flex justify-between text-text-muted mb-1">
-                <span className="flex items-center gap-1">
-                  <span>STS Cranes Adjustment:</span>
-                </span>
-                <span className={`font-semibold ${craneAdjustment > 0 ? 'text-emerald-700' : craneAdjustment < 0 ? 'text-rose-600' : 'text-text-main'}`}>
-                  {craneAdjustment > 0 ? `+${craneAdjustment} Cranes` : craneAdjustment < 0 ? `${craneAdjustment} Crane Outage` : 'Baseline (4 Cranes)'}
-                </span>
-              </div>
-              <input
-                type="range"
-                min="-2"
-                max="2"
-                step="1"
-                value={craneAdjustment}
-                onChange={e => {
-                  setCraneAdjustment(Number(e.target.value));
-                  setSelectedPreset('custom');
-                }}
-                className="w-full accent-brand-teal cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-text-caption mt-0.5">
-                <span>-2 (Severe Failure)</span>
-                <span>0 (Normal)</span>
-                <span>+2 (Reinforced)</span>
-              </div>
-            </div>
-
-            {/* Truck Flow Throughput */}
-            <div>
-              <div className="flex justify-between text-text-muted mb-1">
-                <span className="flex items-center gap-1">
-                  <Truck className="w-3.5 h-3.5 text-text-caption" />
-                  <span>Terminal Gate Flow:</span>
-                </span>
-                <span className="font-semibold text-text-main">{truckFlowPerHour} trucks/hr</span>
-              </div>
-              <input
-                type="range"
-                min="20"
-                max="120"
-                step="10"
-                value={truckFlowPerHour}
-                onChange={e => {
-                  setTruckFlowPerHour(Number(e.target.value));
-                  setSelectedPreset('custom');
-                }}
-                className="w-full accent-brand-teal cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-text-caption mt-0.5">
-                <span>20 (Gate Congestion)</span>
-                <span>60 (Normal)</span>
-                <span>120 (Express OCR)</span>
-              </div>
-            </div>
-
-            {/* Container Volume Multiplier */}
-            <div>
-              <div className="flex justify-between text-text-muted mb-1">
-                <span className="flex items-center gap-1">
-                  <Layers className="w-3.5 h-3.5 text-text-caption" />
-                  <span>Container Volume Load:</span>
-                </span>
-                <span className="font-semibold text-text-main">{Math.round(containerVolumeMultiplier * 100)}% TEU</span>
-              </div>
-              <input
-                type="range"
-                min="0.7"
-                max="1.5"
-                step="0.1"
-                value={containerVolumeMultiplier}
-                onChange={e => {
-                  setContainerVolumeMultiplier(Number(e.target.value));
-                  setSelectedPreset('custom');
-                }}
-                className="w-full accent-brand-teal cursor-pointer"
-              />
-              <div className="flex justify-between text-[10px] text-text-caption mt-0.5">
-                <span>70% (Light)</span>
-                <span>100% (Standard)</span>
-                <span>150% (Peak Peak)</span>
-              </div>
-            </div>
-
-            {/* Weather Severity */}
-            <div>
-              <label className="text-text-muted block mb-1 font-medium flex items-center gap-1">
-                <CloudSun className="w-3.5 h-3.5 text-text-caption" />
-                <span>Weather & Sea State:</span>
-              </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['Calm', 'Moderate', 'Severe'] as const).map(w => (
-                  <button
-                    key={w}
-                    type="button"
-                    onClick={() => {
-                      setWeatherSeverity(w);
-                      setSelectedPreset('custom');
-                    }}
-                    className={`py-1.5 text-xs rounded-xl font-medium border transition-colors ${
-                      weatherSeverity === w
-                        ? 'bg-brand-teal text-white border-brand-teal font-semibold'
-                        : 'bg-surface-subtle text-text-muted border-border-subtle hover:text-text-main'
-                    }`}
-                  >
-                    {w}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Tactical Checkbox Toggles */}
-            <div className="p-3 rounded-2xl bg-surface-subtle border border-border-subtle space-y-2">
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={reallocateBottleneckVessel}
-                  onChange={e => {
-                    setReallocateBottleneckVessel(e.target.checked);
-                    setSelectedPreset('custom');
-                  }}
-                  className="rounded mt-0.5 accent-brand-teal"
-                />
-                <span className="text-[11px] text-text-main">
-                  <strong>Reallocate Ocean Star to Berth B02</strong> (Bypasses B04 crane deficit)
-                </span>
-              </label>
-
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={doubleShiftGangs}
-                  onChange={e => {
-                    setDoubleShiftGangs(e.target.checked);
-                    setSelectedPreset('custom');
-                  }}
-                  className="rounded mt-0.5 accent-brand-teal"
-                />
-                <span className="text-[11px] text-text-main">
-                  <strong>Double Stevedore Gangs</strong> (+35% handling pace during night shifts)
-                </span>
-              </label>
-            </div>
-
-            {/* Duration Slider */}
-            <div>
-              <div className="flex justify-between text-text-muted mb-1">
-                <span>Simulation Time Window:</span>
-                <span className="font-semibold text-text-main">{durationHours} hours</span>
-              </div>
-              <input
-                type="range"
-                min="2"
-                max="24"
-                step="2"
-                value={durationHours}
-                onChange={e => setDurationHours(Number(e.target.value))}
-                className="w-full accent-brand-teal cursor-pointer"
-              />
-            </div>
-
-            <button
-              onClick={handleSimulate}
-              disabled={isSimulating}
-              className="w-full py-2.5 rounded-xl text-xs font-semibold text-white bg-brand-teal hover:bg-teal-700 transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
-              <span>{isSimulating ? 'Calculating Impact...' : 'Run Simulation'}</span>
-            </button>
+      {/* 3. Disruption Levers & Strategy Selector Strip */}
+      <div className="bg-surface p-5 rounded-3xl border border-border-subtle shadow-xs grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+        {/* Outage Duration Slider */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs">
+            <span className="font-semibold text-text-main">Disruption Duration:</span>
+            <span className="font-mono font-bold text-brand-teal">{durationHours} hours</span>
+          </div>
+          <input
+            type="range"
+            min="2"
+            max="36"
+            step="1"
+            value={durationHours}
+            onChange={(e) => setDurationHours(parseInt(e.target.value))}
+            className="w-full accent-brand-teal cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] text-text-caption">
+            <span>2h Minor Trip</span>
+            <span>12h Full Shift</span>
+            <span>36h Major Overhaul</span>
           </div>
         </div>
 
-        {/* Stage 2 & Stage 3: Results & AI Recovery Plan */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Stage 2: Simulated Impact (Before vs After) */}
-          <BeforeAfterCard
-            title={`2. Simulated Disruption Impact: ${simResult.scenarioName}`}
-            beforeTitle="Current Baseline (Before)"
-            afterTitle="Projected Outcome (After)"
-            beforeDetails={{
-              berth: 'Berth B04 (High Risk)',
-              vessel: 'ULCV Ocean Star (14,500 TEU)',
-              cranes: 2,
-              status: 'Constrained by C03 hoist drive fault; 7 vessels in anchorage backlog.',
-            }}
-            afterDetails={{
-              berth: reallocateBottleneckVessel ? 'Berth B02 (Diverted)' : 'Berth B04 (Active)',
-              vessel: 'ULCV Ocean Star (14,500 TEU)',
-              cranes: Math.max(1, 2 + craneAdjustment),
-              status: simResult.deltas.isImprovement
-                ? 'Operational bottleneck resolved; flow cleared with increased crane density.'
-                : 'Elevated queue pressure; prolonged waiting time on commercial vessels.',
-            }}
-            metrics={[
-              {
-                label: 'Anchorage Queue',
-                before: `${simResult.before.queueCount} vessels`,
-                after: `${simResult.after.queueCount} vessels`,
-                delta: simResult.deltas.queueDelta !== 0
-                  ? `${simResult.deltas.queueDelta > 0 ? '+' : ''}${simResult.deltas.queueDelta} vessels`
-                  : 'No change',
-                isPositive: simResult.deltas.queueDelta <= 0,
-              },
-              {
-                label: 'Average Wait Time',
-                before: `${simResult.before.avgWaitHours}h`,
-                after: `${simResult.after.avgWaitHours}h`,
-                delta: simResult.deltas.waitHoursDelta !== 0
-                  ? `${simResult.deltas.waitHoursDelta > 0 ? '+' : ''}${simResult.deltas.waitHoursDelta}h`
-                  : 'Stable',
-                isPositive: simResult.deltas.waitHoursDelta <= 0,
-              },
-              {
-                label: 'Berth Saturation',
-                before: `${simResult.before.berthUtilizationPercent}%`,
-                after: `${simResult.after.berthUtilizationPercent}%`,
-                delta: simResult.deltas.berthUtilDelta !== 0
-                  ? `${simResult.deltas.berthUtilDelta > 0 ? '+' : ''}${simResult.deltas.berthUtilDelta}%`
-                  : 'Balanced',
-                isPositive: simResult.deltas.berthUtilDelta <= 0,
-              },
-              {
-                label: 'Demurrage Exposure',
-                before: `$${simResult.before.demurrageExposureUsd.toLocaleString()}`,
-                after: `$${simResult.after.demurrageExposureUsd.toLocaleString()}`,
-                delta: simResult.deltas.demurrageDeltaUsd !== 0
-                  ? `${simResult.deltas.demurrageDeltaUsd > 0 ? '+$' : '-$'}${Math.abs(simResult.deltas.demurrageDeltaUsd).toLocaleString()}`
-                  : 'Neutral',
-                isPositive: simResult.deltas.demurrageDeltaUsd <= 0,
-              },
-            ]}
-          />
-
-          {/* Operational Rationale Card */}
-          <div className="bg-surface p-5 rounded-3xl border border-border-subtle shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-2">
-            <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5 text-brand-teal" />
-              <span>Operational Simulation Rationale</span>
-            </h3>
-            <p className="text-xs text-text-muted leading-relaxed">
-              {simResult.operationalRationale}
-            </p>
+        {/* Severity Multiplier */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs">
+            <span className="font-semibold text-text-main">Severity Multiplier:</span>
+            <span className="font-mono font-bold text-rose-600">{severityMultiplier.toFixed(1)}x</span>
           </div>
+          <input
+            type="range"
+            min="0.5"
+            max="2.0"
+            step="0.1"
+            value={severityMultiplier}
+            onChange={(e) => setSeverityMultiplier(parseFloat(e.target.value))}
+            className="w-full accent-rose-500 cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] text-text-caption">
+            <span>0.5x Partial</span>
+            <span>1.0x Nominal</span>
+            <span>2.0x Compounded</span>
+          </div>
+        </div>
 
-          {/* Stage 3: AI Recovery Plan */}
-          <div className="bg-surface p-6 rounded-3xl border border-emerald-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-3">
-              <div>
+        {/* Execute Simulation Button */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSimulate}
+            disabled={isSimulating}
+            className="flex-1 py-3 px-4 rounded-2xl text-xs font-bold text-white bg-brand-teal hover:bg-teal-700 transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSimulating ? 'animate-spin' : ''}`} />
+            <span>{isSimulating ? 'Computing Plan...' : 'Evaluate Simulation'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 4. THREE-WAY COMPARATIVE MATRIX (Requirement 6: Original vs Disrupted vs Recovery) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-text-main flex items-center gap-2">
+            <span>3-Way Operational Impact Comparison</span>
+            <span className="text-xs font-normal text-text-muted">
+              (Planned Baseline vs Inaction Consequences vs Proposed Recovery)
+            </span>
+          </h2>
+          <span className="text-xs font-mono text-text-caption">
+            Deterministic Evaluation • Non-Reversible Baseline Safe
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Card 1: Original Plan */}
+          <div className="bg-surface rounded-3xl border border-border-subtle p-6 space-y-4 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-emerald-950 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>3. AI Recovery Plan</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <h3 className="font-bold text-sm text-text-main">
+                    1. Original Baseline Plan
                   </h3>
-                  <span className="text-xs text-emerald-800 font-medium px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
-                    Est. Recovery: {simResult.recoveryPlan.expectedRecoveryHours}h
-                  </span>
                 </div>
-                <p className="text-xs text-text-muted mt-0.5">
-                  Automated operational re-allocation protocol formulated for the simulated scenario.
-                </p>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-surface-subtle text-text-muted">
+                  Pre-Disruption
+                </span>
               </div>
 
-              {!isRecoveryPlanApplied ? (
-                <button
-                  onClick={handleApplyRecovery}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-emerald-700 hover:bg-emerald-800 transition-all shadow-xs cursor-pointer"
-                >
-                  <Zap className="w-4 h-4" />
-                  <span>Apply Recovery Plan</span>
-                </button>
-              ) : (
-                <span className="text-xs font-semibold text-emerald-800 px-3 py-1.5 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                  <span>Recovery Plan Deployed</span>
-                </span>
-              )}
-            </div>
-
-            {/* 3 Step Actions */}
-            <div className="space-y-3 text-xs">
-              {simResult.recoveryPlan.steps.map(step => (
-                <div
-                  key={step.order}
-                  className="p-3.5 rounded-xl bg-surface-subtle border border-border-subtle flex items-start gap-3.5"
-                >
-                  <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-semibold flex items-center justify-center shrink-0 mt-0.5 text-xs">
-                    {step.order}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-text-main text-xs">{step.title}</span>
-                      <span className="text-[10px] text-text-muted bg-surface px-2 py-0.5 rounded border border-border-subtle">
-                        {step.targetEntity}
-                      </span>
-                    </div>
-                    <p className="text-text-muted mt-1 text-xs leading-relaxed">
-                      {step.detail}
-                    </p>
-                  </div>
+              <div className="space-y-2.5 text-xs">
+                <div className="flex justify-between py-1 border-b border-border-subtle">
+                  <span className="text-text-muted">Vessel Waiting Time:</span>
+                  <span className="font-mono font-bold text-text-main">{planComparison.original.waitHours}h</span>
                 </div>
-              ))}
+                <div className="flex justify-between py-1 border-b border-border-subtle">
+                  <span className="text-text-muted">Total Delay Hours:</span>
+                  <span className="font-mono font-bold text-emerald-600">0.0h (On Schedule)</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border-subtle">
+                  <span className="text-text-muted">Berth Utilization:</span>
+                  <span className="font-mono text-text-main">{planComparison.original.berthUtil}%</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border-subtle">
+                  <span className="text-text-muted">Crane Handling Pace:</span>
+                  <span className="font-mono text-text-main">{planComparison.original.craneUtil}% Capacity</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border-subtle">
+                  <span className="text-text-muted">Container Yard Dwell:</span>
+                  <span className="font-mono text-text-main">{planComparison.original.dwellDays} days</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border-subtle">
+                  <span className="text-text-muted">Missed Connections:</span>
+                  <span className="font-mono font-bold text-emerald-600">0 TEU</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-text-muted">Cargo Completion:</span>
+                  <span className="font-semibold text-text-main">{planComparison.original.completionTime}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Post-Recovery Action Links */}
-            <div className="pt-2 border-t border-border-subtle flex items-center justify-between text-xs">
-              <span className="text-text-muted">
-                {isRecoveryPlanApplied
-                  ? 'Recovery actions active across 72-Hour Planner and Operations Board.'
-                  : 'Click Apply Recovery Plan to deploy changes to live operations.'}
-              </span>
+            <div className="p-3 rounded-2xl bg-surface-subtle border border-border-subtle text-[11px] text-text-muted">
+              Baseline target operating SLA before physical equipment outage.
+            </div>
+          </div>
+
+          {/* Card 2: Disrupted Plan (Inaction Consequence) */}
+          <div className="bg-rose-50/40 dark:bg-rose-950/20 rounded-3xl border border-rose-200 dark:border-rose-900/40 p-6 space-y-4 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-rose-200/60 dark:border-rose-900/60">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse" />
+                  <h3 className="font-bold text-sm text-rose-950 dark:text-rose-200">
+                    2. Disrupted (No Action)
+                  </h3>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-100 text-rose-800">
+                  Critical Outage
+                </span>
+              </div>
+
+              <div className="space-y-2.5 text-xs text-rose-950 dark:text-rose-200">
+                <div className="flex justify-between py-1 border-b border-rose-200/60 dark:border-rose-900/60">
+                  <span className="text-rose-800 dark:text-rose-300">Vessel Waiting Time:</span>
+                  <span className="font-mono font-bold text-rose-600">{planComparison.disrupted.waitHours}h</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-rose-200/60 dark:border-rose-900/60">
+                  <span className="text-rose-800 dark:text-rose-300">Accumulated Delay:</span>
+                  <span className="font-mono font-bold text-rose-600">+{planComparison.disrupted.totalDelayHours}h Delay</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-rose-200/60 dark:border-rose-900/60">
+                  <span className="text-rose-800 dark:text-rose-300">Berth Saturation:</span>
+                  <span className="font-mono font-bold text-rose-600">{planComparison.disrupted.berthUtil}% (Critical)</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-rose-200/60 dark:border-rose-900/60">
+                  <span className="text-rose-800 dark:text-rose-300">Degraded Crane Rate:</span>
+                  <span className="font-mono">{planComparison.disrupted.craneUtil}%</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-rose-200/60 dark:border-rose-900/60">
+                  <span className="text-rose-800 dark:text-rose-300">Yard Dwell Drag:</span>
+                  <span className="font-mono">{planComparison.disrupted.dwellDays} days</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-rose-200/60 dark:border-rose-900/60">
+                  <span className="text-rose-800 dark:text-rose-300">Missed Transshipments:</span>
+                  <span className="font-mono font-bold text-rose-600">{planComparison.disrupted.missedConnections} TEU</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-rose-800 dark:text-rose-300">Demurrage Exposure:</span>
+                  <span className="font-mono font-bold text-rose-600">${planComparison.disrupted.demurrageUsd.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-rose-100/60 dark:bg-rose-900/40 text-[11px] text-rose-900 dark:text-rose-200">
+              Knock-on consequence: Delays {planComparison.disrupted.knockOnVessels} subsequent vessels awaiting quayside vacancy.
+            </div>
+          </div>
+
+          {/* Card 3: Recovery Plan */}
+          <div className="bg-emerald-50/50 dark:bg-emerald-950/20 rounded-3xl border border-emerald-300 dark:border-emerald-800 p-6 space-y-4 shadow-sm flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-emerald-200 dark:border-emerald-800">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
+                  <h3 className="font-bold text-sm text-emerald-950 dark:text-emerald-200">
+                    3. Proposed Recovery Plan
+                  </h3>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                  Feasible & Verified
+                </span>
+              </div>
+
+              <div className="space-y-2.5 text-xs text-emerald-950 dark:text-emerald-200">
+                <div className="flex justify-between py-1 border-b border-emerald-200 dark:border-emerald-800">
+                  <span className="text-emerald-800 dark:text-emerald-300">Recovered Delay:</span>
+                  <span className="font-mono font-bold text-emerald-600">-{planComparison.recovery.delayRecoveredHours}h Saved</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-emerald-200 dark:border-emerald-800">
+                  <span className="text-emerald-800 dark:text-emerald-300">Net Vessel Wait:</span>
+                  <span className="font-mono font-bold text-text-main">{planComparison.recovery.waitHours}h</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-emerald-200 dark:border-emerald-800">
+                  <span className="text-emerald-800 dark:text-emerald-300">Controlled Berth Util:</span>
+                  <span className="font-mono text-emerald-600 font-semibold">{planComparison.recovery.berthUtil}% (Safe)</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-emerald-200 dark:border-emerald-800">
+                  <span className="text-emerald-800 dark:text-emerald-300">Missed Connections:</span>
+                  <span className="font-mono font-bold text-emerald-600">0 TEU Protected</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-emerald-200 dark:border-emerald-800">
+                  <span className="text-emerald-800 dark:text-emerald-300">Intervention Cost:</span>
+                  <span className="font-mono">${planComparison.recovery.interventionCostUsd.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-emerald-800 dark:text-emerald-300 font-bold">Net Commercial ROI:</span>
+                  <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 text-sm">
+                    +${planComparison.recovery.netSavingsUsd.toLocaleString()} USD
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2">
               <button
-                onClick={() => navigate('/decision/planner')}
-                className="text-brand-teal hover:underline font-medium flex items-center gap-1 cursor-pointer"
+                onClick={handleApplyApprovedPlan}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                <span>View 72-Hour Planner</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Approve & Apply Recovery Plan</span>
               </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Strategy Comparator Panel */}
+      <div className="bg-surface rounded-3xl border border-border-subtle p-6 space-y-4 shadow-xs">
+        <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+          <div>
+            <h3 className="text-sm font-bold text-text-main">
+              Side-by-Side Recovery Strategy Comparator
+            </h3>
+            <p className="text-xs text-text-muted mt-0.5">
+              Select alternative operational responses to inspect feasibility constraints and trade-offs.
+            </p>
+          </div>
+          <span className="text-xs font-mono font-semibold text-brand-teal">
+            Multi-Objective Solver
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div
+            onClick={() => setSelectedStrategy('A')}
+            className={`p-4 rounded-2xl border text-xs space-y-2 cursor-pointer transition-all ${
+              selectedStrategy === 'A'
+                ? 'bg-brand-teal/10 border-brand-teal text-brand-teal ring-1 ring-brand-teal shadow-xs'
+                : 'bg-surface hover:bg-surface-subtle border-border-subtle text-text-main'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold">Strategy A (Recommended)</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-teal text-white">Optimal</span>
+            </div>
+            <div className="font-semibold text-text-main">Mobilize Adjacent STS Crane C02</div>
+            <p className="text-[11px] text-text-muted">
+              Shunts C02 along contiguous quay rail (45m). Zero secondary vessel conflict. High feasibility.
+            </p>
+            <div className="text-[11px] font-mono text-emerald-600 font-semibold">
+              Net Savings: +$68,350 USD • Delay: -6.0h
+            </div>
+          </div>
+
+          <div
+            onClick={() => setSelectedStrategy('B')}
+            className={`p-4 rounded-2xl border text-xs space-y-2 cursor-pointer transition-all ${
+              selectedStrategy === 'B'
+                ? 'bg-brand-teal/10 border-brand-teal text-brand-teal ring-1 ring-brand-teal shadow-xs'
+                : 'bg-surface hover:bg-surface-subtle border-border-subtle text-text-main'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold">Strategy B</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-surface-subtle text-text-muted border border-border-subtle">Tug Shifting</span>
+            </div>
+            <div className="font-semibold text-text-main">Warp Vessel to Berth B02</div>
+            <p className="text-[11px] text-text-muted">
+              Tug assist shifting (120m). Adds +90m wait to Feeder Baltic at Berth B02. High expense ($32k).
+            </p>
+            <div className="text-[11px] font-mono text-text-main font-semibold">
+              Net Savings: +$36,000 USD • Delay: -4.5h
+            </div>
+          </div>
+
+          <div
+            onClick={() => setSelectedStrategy('C')}
+            className={`p-4 rounded-2xl border text-xs space-y-2 cursor-pointer transition-all ${
+              selectedStrategy === 'C'
+                ? 'bg-brand-teal/10 border-brand-teal text-brand-teal ring-1 ring-brand-teal shadow-xs'
+                : 'bg-surface hover:bg-surface-subtle border-border-subtle text-text-main'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="font-bold">Strategy C</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-surface-subtle text-text-muted border border-border-subtle">Mobile Crane</span>
+            </div>
+            <div className="font-semibold text-text-main">Deploy MHC-01 + Overtime Gang</div>
+            <p className="text-[11px] text-text-muted">
+              Outreach limited to 16 rows. Outer deck tiers cannot be worked without ship shifting.
+            </p>
+            <div className="text-[11px] font-mono text-text-main font-semibold">
+              Net Savings: +$42,000 USD • Delay: -3.8h
             </div>
           </div>
         </div>

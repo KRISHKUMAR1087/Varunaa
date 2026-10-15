@@ -141,7 +141,7 @@ export class GeminiCopilotService {
     // Attempt live Google Gemini generation with candidates
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const systemInstruction = `You are PortsPilot AI, an intelligent conversational AI assistant specializing in port operations, maritime logistics, and general technical inquiries.
+      const systemInstruction = `You are Varunaa AI, an intelligent conversational AI assistant specializing in port operations, maritime logistics, and general technical inquiries.
 
 CORE ARCHITECTURAL RULES:
 1. GENERAL KNOWLEDGE & DIRECT ANSWERS:
@@ -297,7 +297,7 @@ You can submit an official Berth Request at /shipping/berth-requests or update y
 
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const systemInstruction = `You are the PortsPilot AI Shipping Copilot for Apex Maritime Agency.
+      const systemInstruction = `You are the Varunaa AI Shipping Copilot for Apex Maritime Agency.
 - You serve exclusively the Ship Agent. Your scope is strictly limited to their managed fleet: Ocean Star (VES-01), Pacific Voyager (VES-05), MSC Orion (VES-02).
 - Ground all schedules, document statuses, and berth assignments strictly in the provided fleet context.
 - When the user greets you, respond warmly and professionally.
@@ -638,7 +638,7 @@ ${query}`;
 
     if (isGreeting) {
       return {
-        message: `Hello! I am your PortsPilot AI Operational Copilot.
+        message: `Hello! I am your Varunaa AI Operational Copilot.
 
 I am connected to Port Sector Alpha's operational telemetry, continuously monitoring quayside berths B01 through B06, active container vessels, STS gantry cranes, and our 72-hour queuing congestion models.
 
@@ -770,7 +770,7 @@ Key standards:
 
 • Demurrage: A daily penalty fee charged by the carrier or terminal when cargo remains inside the container terminal past the agreed free-time window (typically 3 to 7 days). For a container ship waiting at anchorage due to berth congestion, demurrage costs the operator $25,000 to $60,000+ per day.
 • Detention: A fee charged when the cargo owner takes the empty or loaded container outside the port gate and fails to return it within the permitted free days.
-• PortsPilot Optimization: Our BAP/CAP mathematical optimization algorithm reassigns bottlenecked vessels (like MV Ocean Star to Berth B02) specifically to minimize anchorage waiting hours, saving an estimated $148,000 in direct demurrage exposure.`,
+• Varunaa Optimization: Our BAP/CAP mathematical optimization algorithm reassigns bottlenecked vessels (like MV Ocean Star to Berth B02) specifically to minimize anchorage waiting hours, saving an estimated $148,000 in direct demurrage exposure.`,
         suggestedActions: [
           { label: 'Why did optimizer move Ocean Star?', prompt: 'Why did the optimizer reassign Ocean Star?' },
           { label: 'Open Optimizer', actionRoute: '/decision/optimizer' },
@@ -814,7 +814,7 @@ AIS broadcasts real-time telemetry:
 • Static Data: Vessel IMO, MMSI, callsign, name, vessel type, and dimensions (LOA and beam).
 • Dynamic Data: High-precision GPS latitude/longitude, Speed Over Ground (SOG), Course Over Ground (COG), heading, and rate of turn.
 • Voyage Data: Destination port, estimated time of arrival (ETA), and maximum present static draft.
-• Port Integration: PortsPilot AI ingests live AIS feeds from all approaching vessels to forecast queue arrival bunching up to 72 hours ahead.`,
+• Port Integration: Varunaa AI ingests live AIS feeds from all approaching vessels to forecast queue arrival bunching up to 72 hours ahead.`,
         suggestedActions: [
           { label: 'Inspect Active Vessels', actionRoute: '/operations/vessels' },
           { label: 'View 72h Forecast', actionRoute: '/intelligence/forecast' },
@@ -855,7 +855,7 @@ AIS broadcasts real-time telemetry:
       q.includes('bap')
     ) {
       return {
-        message: `In PortsPilot AI, artificial intelligence and mathematical optimization operate as a dual-engine architecture:
+        message: `In Varunaa AI, artificial intelligence and mathematical optimization operate as a dual-engine architecture:
 
 1. Machine Learning Congestion Forecasting:
    Neural network regression models ingest historical ship arrival bunching, terminal weather, crane maintenance status, and yard dwell times to predict berth utilization percentages and queue escalations 24 to 72 hours in advance.
@@ -1220,7 +1220,7 @@ ${alerts.length > 0 ? alerts.map((a: any) => `• [${a.severity || 'WARNING'}] $
     return {
       message: `I received your question: "${query}".
 
-As PortsPilot AI, I am directly connected to Port Sector Alpha's maritime telemetry, quay allocation, vessel queue tracking, and discrete disruption simulation.
+As Varunaa AI, I am directly connected to Port Sector Alpha's maritime telemetry, quay allocation, vessel queue tracking, and discrete disruption simulation.
 
 To enable live Google Gemini generative AI reasoning across any general subject or question, connect your Gemini API key using the "Connect Gemini API Key" button above or under Settings > AI.
 

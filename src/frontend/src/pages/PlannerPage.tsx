@@ -52,7 +52,7 @@ export const PlannerPage: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `portspilot-72h-shift-plan-${Date.now()}.csv`;
+    a.download = `varunaa-72h-shift-plan-${Date.now()}.csv`;
     a.click();
     showToast('success', 'Plan Exported', '72-Hour operational CSV generated and downloaded.');
   };

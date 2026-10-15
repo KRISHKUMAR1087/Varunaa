@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
   ArrowRight,
@@ -15,6 +16,7 @@ import { RouteMapGraphic } from '../components/operations/RouteMapGraphic';
 import { RiskBadge } from '../components/common/RiskBadge';
 
 export const RoutesPage: React.FC = () => {
+  const navigate = useNavigate();
   const { routes, setIsCopilotOpen, sendCopilotMessage, showToast, updateVessel, vessels } = useOperations();
   const [selectedPortCode, setSelectedPortCode] = useState<string>('PORT-B');
 
@@ -62,6 +64,13 @@ export const RoutesPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate('/intelligence/voyage-twin')}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-text-main bg-surface hover:bg-surface-subtle border border-border-subtle transition-all shadow-xs cursor-pointer"
+          >
+            <Navigation className="w-3.5 h-3.5 text-brand-teal" />
+            <span>Open Voyage Twin (AIS Live)</span>
+          </button>
           <button
             onClick={handleAskGemini}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 transition-all shadow-md shadow-teal-500/20 cursor-pointer active:scale-95"

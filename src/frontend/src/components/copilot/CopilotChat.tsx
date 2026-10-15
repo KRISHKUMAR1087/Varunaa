@@ -133,7 +133,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
     if (!trimmed) {
       localStorage.removeItem('gemini_api_key');
       setHasApiKey(false);
-      showToast('info', 'API Key Removed', 'Reverted to PortsPilot local telemetry intelligence.');
+      showToast('info', 'API Key Removed', 'Reverted to Varunaa local telemetry intelligence.');
       setIsKeyModalOpen(false);
       return;
     }
@@ -163,7 +163,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${hasApiKey ? 'bg-emerald-500 animate-pulse' : 'bg-brand-teal'}`} />
           <span className="font-semibold text-text-main text-[11px]">
-            {hasApiKey ? 'Google Gemini 2.0 Live' : 'PortsPilot Local Engine'}
+            {hasApiKey ? 'Google Gemini 2.0 Live' : 'Varunaa Local Engine'}
           </span>
           <span className="text-text-muted text-[10px] hidden sm:inline">
             {hasApiKey ? '• Open-Domain & Port Intelligence' : '• Built-in Operational Knowledge'}
@@ -369,7 +369,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ embedded = false }) =>
                     setApiKeyInput('');
                     localStorage.removeItem('gemini_api_key');
                     setHasApiKey(false);
-                    showToast('info', 'Key Removed', 'Reverted to PortsPilot local telemetry engine.');
+                    showToast('info', 'Key Removed', 'Reverted to Varunaa local telemetry engine.');
                     setIsKeyModalOpen(false);
                   }}
                   className="text-xs text-rose-600 hover:text-rose-700 font-medium cursor-pointer"

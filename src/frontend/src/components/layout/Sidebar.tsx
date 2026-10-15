@@ -20,6 +20,9 @@ import {
   X,
   LogOut,
   Pin,
+  Search,
+  Navigation,
+  CheckCircle2,
 } from 'lucide-react';
 import { useOperations } from '../../context/OperationsContext';
 import { useAuth } from '../../context/AuthContext';
@@ -97,9 +100,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       label: 'Intelligence',
       items: [
+        { name: 'Delay Investigation Lab', path: '/intelligence/delays', icon: Search },
+        { name: 'Voyage Digital Twin', path: '/intelligence/voyage-twin', icon: Navigation },
+        { name: 'Route Matrix', path: '/intelligence/routes', icon: Route },
         { name: 'Congestion Forecast', path: '/intelligence/forecast', icon: ChartNoAxesCombined },
         { name: 'AI Copilot', path: '/copilot', icon: Sparkles },
-        { name: 'Route Intelligence', path: '/intelligence/routes', icon: Route },
       ],
     },
     {
@@ -108,6 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         { name: 'Optimizer', path: '/decision/optimizer', icon: Zap },
         { name: 'What-If Simulator', path: '/decision/simulator', icon: RefreshCw },
         { name: '72-Hour Planner', path: '/decision/planner', icon: Clock },
+        { name: 'Scenarios Verification', path: '/decision/verification', icon: CheckCircle2 },
       ],
     },
     {
@@ -184,10 +190,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div className="min-w-0 flex-1 flex flex-col justify-center">
               <span className="font-bold text-sm tracking-tight text-text-main truncate leading-none mb-1">
-                PortsPilot
+                Varunaa
               </span>
               <span className="text-xs font-medium text-text-muted truncate leading-none">
-                Operations Platform
+                Port Disruption & Recovery
               </span>
             </div>
           </div>
