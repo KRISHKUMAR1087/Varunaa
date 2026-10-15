@@ -53,10 +53,22 @@ export const SettingsPage: React.FC = () => {
   const [warningThreshold, setWarningThreshold] = useState(85);
   const [lookaheadHorizon, setLookaheadHorizon] = useState('72h');
   const [aiAutonomy, setAiAutonomy] = useState('recommend_only');
-  const [geminiModel, setGeminiModel] = useState('gemini-2.0-flash');
+  const [geminiModel, setGeminiModel] = useState(() => {
+    try {
+      return localStorage.getItem('gemini_model') || 'gemini-2.5-flash-lite';
+    } catch {
+      return 'gemini-2.5-flash-lite';
+    }
+  });
   const [geminiApiKey, setGeminiApiKey] = useState(() => {
     try {
-      return localStorage.getItem('gemini_api_key') || '';
+      const meta = import.meta as { env?: Record<string, string> };
+      return (
+        localStorage.getItem('gemini_api_key') ||
+        meta?.env?.VITE_GEMINI_API_KEY ||
+        meta?.env?.GEMINI_API_KEY ||
+        ''
+      );
     } catch {
       return '';
     }
@@ -71,6 +83,7 @@ export const SettingsPage: React.FC = () => {
         return;
       }
       localStorage.setItem('gemini_api_key', trimmed);
+      localStorage.setItem('gemini_model', geminiModel);
       showToast('success', 'AI Settings Saved', `Google Gemini reasoning (${geminiModel}) is now active.`);
     } else {
       localStorage.removeItem('gemini_api_key');
@@ -517,7 +530,7 @@ export const SettingsPage: React.FC = () => {
                 <div>
                   <h4 className="text-xs font-semibold text-text-main">
                     {geminiApiKey.trim().length > 15 && !geminiApiKey.includes('your-')
-                      ? 'Google Gemini 2.0 Connected'
+                      ? 'Google Gemini Live Connected'
                       : 'Varunaa Local Telemetry Engine'}
                   </h4>
                   <p className="text-[11px] text-text-muted">
@@ -546,7 +559,7 @@ export const SettingsPage: React.FC = () => {
               <div className="relative flex items-center">
                 <input
                   type={showApiKey ? 'text' : 'password'}
-                  placeholder="Paste your Gemini API key (AIzaSy...)"
+                  placeholder="Paste your Gemini API key (AQ... or AIza...)"
                   value={geminiApiKey}
                   onChange={e => setGeminiApiKey(e.target.value)}
                   className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-main pr-10 focus:outline-hidden focus:border-brand-teal focus:ring-1 focus:ring-brand-teal"
@@ -571,9 +584,10 @@ export const SettingsPage: React.FC = () => {
                 onChange={e => setGeminiModel(e.target.value)}
                 className="w-full bg-surface-subtle border border-border-subtle rounded-xl px-3 py-2 text-xs text-text-main focus:outline-hidden focus:border-brand-teal"
               >
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recommended — Ultra Low-Latency &amp; Intelligent)</option>
-                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Maritime Reasoning &amp; Multi-tool)</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Standard Lightweight)</option>
+                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Recommended — Ultra Low-Latency Real-Time)</option>
+                <option value="gemini-3.5-flash">Gemini 3.5 Flash (Advanced Real-Time Reasoning)</option>
+                <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (High-Throughput Telemetry)</option>
+                <option value="gemini-flash-latest">Gemini Flash Latest (Auto-Updated Live)</option>
               </select>
             </div>
 

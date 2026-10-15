@@ -51,28 +51,72 @@ export interface ShipAgentContext {
 
 export type CopilotContext = PortAdminContext;
 
-const CANDIDATE_MODELS = [
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-1.5-pro',
-  'gemini-2.0-flash-lite',
+export const CANDIDATE_MODELS = [
+  'gemini-2.5-flash-lite',
+  'gemini-3.5-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-3-flash-preview',
+  'gemini-3.8-flash',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
 ];
 
 export class GeminiCopilotService {
-  private getApiKey(): string {
+  public static hasConfiguredKey(): boolean {
     const isPlaceholder = (k: string) =>
       !k ||
       k.startsWith('your-') ||
       k.includes('your-gemini') ||
       k.length < 15;
 
+    const clean = (val: string | null | undefined) =>
+      (val || '').replace(/^['"]|['"]$/g, '').trim();
+
+    try {
+      const local = clean(
+        localStorage.getItem('gemini_api_key') ||
+        localStorage.getItem('VITE_GEMINI_API_KEY')
+      );
+      if (local && !isPlaceholder(local)) return true;
+    } catch {}
+
+    try {
+      const meta = import.meta as { env?: Record<string, string> };
+      if (meta?.env) {
+        const v = clean(meta.env.VITE_GEMINI_API_KEY || meta.env.GEMINI_API_KEY);
+        if (v && !isPlaceholder(v)) return true;
+      }
+    } catch {}
+
+    try {
+      const proc = typeof process !== 'undefined' ? (process as { env?: Record<string, string> }) : null;
+      if (proc?.env) {
+        const p = clean(proc.env.VITE_GEMINI_API_KEY || proc.env.GEMINI_API_KEY);
+        if (p && !isPlaceholder(p)) return true;
+      }
+    } catch {}
+
+    return false;
+  }
+
+  public getApiKey(): string {
+    const isPlaceholder = (k: string) =>
+      !k ||
+      k.startsWith('your-') ||
+      k.includes('your-gemini') ||
+      k.length < 15;
+
+    const clean = (val: string | null | undefined) =>
+      (val || '').replace(/^['"]|['"]$/g, '').trim();
+
     // 1. Check localStorage if user configured a key in settings
     try {
-      const local =
+      const local = clean(
         localStorage.getItem('gemini_api_key') ||
-        localStorage.getItem('VITE_GEMINI_API_KEY');
-      if (local && !isPlaceholder(local.trim())) {
-        return local.trim();
+        localStorage.getItem('VITE_GEMINI_API_KEY')
+      );
+      if (local && !isPlaceholder(local)) {
+        return local;
       }
     } catch {
       // ignore
@@ -82,11 +126,9 @@ export class GeminiCopilotService {
     try {
       const meta = import.meta as { env?: Record<string, string> };
       if (meta?.env) {
-        if (meta.env.VITE_GEMINI_API_KEY && !isPlaceholder(meta.env.VITE_GEMINI_API_KEY.trim())) {
-          return meta.env.VITE_GEMINI_API_KEY.trim();
-        }
-        if (meta.env.GEMINI_API_KEY && !isPlaceholder(meta.env.GEMINI_API_KEY.trim())) {
-          return meta.env.GEMINI_API_KEY.trim();
+        const viteKey = clean(meta.env.VITE_GEMINI_API_KEY || meta.env.GEMINI_API_KEY);
+        if (viteKey && !isPlaceholder(viteKey)) {
+          return viteKey;
         }
       }
     } catch {
@@ -97,11 +139,9 @@ export class GeminiCopilotService {
     try {
       const proc = typeof process !== 'undefined' ? (process as { env?: Record<string, string> }) : null;
       if (proc?.env) {
-        if (proc.env.VITE_GEMINI_API_KEY && !isPlaceholder(proc.env.VITE_GEMINI_API_KEY.trim())) {
-          return proc.env.VITE_GEMINI_API_KEY.trim();
-        }
-        if (proc.env.GEMINI_API_KEY && !isPlaceholder(proc.env.GEMINI_API_KEY.trim())) {
-          return proc.env.GEMINI_API_KEY.trim();
+        const procKey = clean(proc.env.VITE_GEMINI_API_KEY || proc.env.GEMINI_API_KEY);
+        if (procKey && !isPlaceholder(procKey)) {
+          return procKey;
         }
       }
     } catch {
@@ -210,7 +250,12 @@ ${query}`;
       let responseText = '';
       let lastError: any = null;
 
-      for (const modelName of CANDIDATE_MODELS) {
+      const preferredModel = (typeof localStorage !== 'undefined' ? localStorage.getItem('gemini_model') : '') || '';
+      const modelsToTry = preferredModel && CANDIDATE_MODELS.includes(preferredModel)
+        ? [preferredModel, ...CANDIDATE_MODELS.filter(m => m !== preferredModel)]
+        : CANDIDATE_MODELS;
+
+      for (const modelName of modelsToTry) {
         try {
           const response = await ai.models.generateContent({
             model: modelName,
@@ -312,7 +357,12 @@ ${query}`;
       const contents = [{ role: 'user', parts: [{ text: promptContents }] }];
 
       let responseText = '';
-      for (const modelName of CANDIDATE_MODELS) {
+      const preferredModel = (typeof localStorage !== 'undefined' ? localStorage.getItem('gemini_model') : '') || '';
+      const modelsToTry = preferredModel && CANDIDATE_MODELS.includes(preferredModel)
+        ? [preferredModel, ...CANDIDATE_MODELS.filter(m => m !== preferredModel)]
+        : CANDIDATE_MODELS;
+
+      for (const modelName of modelsToTry) {
         try {
           const response = await ai.models.generateContent({
             model: modelName,
